@@ -17,7 +17,7 @@ async function main() {
   ]);
 
   // Create system admin
-  const systemAdminPassword = await hash('system123', 10);
+  const systemAdminPassword = await hash('121245', 10);
   await prisma.user.create({
     data: {
       email: 'system@admin.com',
@@ -26,81 +26,73 @@ async function main() {
     }
   });
 
-  // Create first school with admin
-  const springfieldAdminPw = await hash('springfield123', 10);
-  const springfieldSchool = await prisma.user.create({
-    data: {
-      email: 'admin@springfield.edu',
-      password: springfieldAdminPw,
-      role: 'SCHOOL_ADMIN',
-      school: {
-        create: {
-          name: 'Springfield High School',
-          address: '123 Education Lane',
-          city: 'Springfield',
-          state: 'IL',
-          country: 'USA',
-          phone: '(555) 123-4567',
-          adminFirstName: 'John',
-          adminLastName: 'Smith'
-        }
-      }
-    },
-    include: { school: true }
-  });
+  // Create schools
+  const schools = await Promise.all([
+    createSchool('Springfield High School', 'admin@springfield.edu', 'IL'),
+    createSchool('Oakridge International', 'admin@oakridge.edu', 'NY'),
+    createSchool('Green Valley Academy', 'admin@greenvalley.edu', 'CA')
+  ]);
 
-  // Create second school
-  const oakridgeAdminPw = await hash('oakridge123', 10);
-  const oakridgeSchool = await prisma.user.create({
-    data: {
-      email: 'admin@oakridge.edu',
-      password: oakridgeAdminPw,
-      role: 'SCHOOL_ADMIN',
-      school: {
-        create: {
-          name: 'Oakridge International',
-          address: '456 Academy Road',
-          city: 'Metropolis',
-          state: 'NY',
-          country: 'USA',
-          phone: '(555) 234-5678',
-          adminFirstName: 'Sarah',
-          adminLastName: 'Wilson'
-        }
-      }
-    },
-    include: { school: true }
-  });
-
-  // Create parents
+  // Create parents (10 parents)
   const parents = await Promise.all([
-    createParent('mary.johnson@example.com', 'Mary', 'Johnson', '(555) 987-6543'),
-    createParent('david.smith@example.com', 'David', 'Smith', '(555) 876-5432'),
-    createParent('lisa.wang@example.com', 'Lisa', 'Wang', '(555) 765-4321')
+    ...Array.from({ length: 10 }, (_, i) => 
+      createParent(`parent${i+1}@example.com`, `Parent${i+1}`, `LastName${i+1}`, `(555) 111-000${i}`)
+    )
   ]);
 
-  // Create students
-  const students = await Promise.all([
-    createStudent('james.johnson@example.com', 'James', 'Johnson', '2008-05-15', 9, springfieldSchool.school.id, [parents[0].id]),
-    createStudent('emily.smith@example.com', 'Emily', 'Smith', '2009-02-20', 8, springfieldSchool.school.id, [parents[0].id, parents[1].id]),
-    createStudent('daniel.wang@example.com', 'Daniel', 'Wang', '2010-11-10', 7, oakridgeSchool.school.id, [parents[2].id]),
-    createStudent('sophia.chen@example.com', 'Sophia', 'Chen', '2007-08-30', 10, oakridgeSchool.school.id, [])
-  ]);
+  // Create students (5 per school)
+ // In the student creation loop (replace the existing student creation code)
+const students = [];
+for (const [schoolIndex, school] of schools.entries()) {
+  const schoolPrefix = school.school.name.toLowerCase().replace(/ /g, '');
+  const schoolStudents = await Promise.all(
+    Array.from({ length: 5 }, (_, i) => {
+      const studentNumber = schoolIndex * 5 + i + 1;
+      const parentIds = [
+        parents[i*2].id,
+        parents[i*2+1].id
+      ].filter(id => id);
+      
+      return createStudent(
+        `student${studentNumber}@${schoolPrefix}.edu`, // Unique email based on school and student number
+        `Student${studentNumber}`,
+        `SLastName${studentNumber}`,
+        `200${Math.floor(Math.random() * 5) + 5}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
+        Math.floor(Math.random() * 4) + 9,
+        school.school.id,
+        parentIds
+      );
+    })
+  );
+  students.push(...schoolStudents);
+}
 
-  // Create assessments
+  // Create assessments (6 assessments)
   const assessments = await Promise.all([
-    createAssessment('Learning Style Assessment', 'Determine learning preferences', AssessmentType.LEARNING_STYLE, [
-      { text: 'I prefer visual materials over verbal explanations', type: QuestionType.LIKERT_SCALE, options: likertOptions },
-      { text: 'Describe your ideal study environment', type: QuestionType.OPEN_ENDED }
-    ]),
-    createAssessment('Career Aptitude Test', 'Identify suitable career paths', AssessmentType.APTITUDE, [
-      { text: 'I enjoy solving complex problems', type: QuestionType.LIKERT_SCALE, options: likertOptions },
-      { text: 'Choose your preferred activities', type: QuestionType.MULTIPLE_CHOICE, options: careerOptions }
-    ]),
-    createAssessment('Personality Assessment', 'Big Five personality traits evaluation', AssessmentType.PERSONALITY, [
-      { text: 'I see myself as someone who is talkative', type: QuestionType.LIKERT_SCALE, options: likertOptions },
-      { text: 'I remain calm under pressure', type: QuestionType.LIKERT_SCALE, options: likertOptions }
-    ])
+    createAssessment('Learning Style Assessment', 'Determine learning preferences', AssessmentType.LEARNING_STYLE, 
+      generateQuestions(5, QuestionType.LIKERT_SCALE, likertOptions)
+    ),
+    createAssessment('Career Aptitude Test', 'Identify suitable career paths', AssessmentType.APTITUDE, 
+      [
+        ...generateQuestions(3, QuestionType.LIKERT_SCALE, likertOptions),
+        ...generateQuestions(2, QuestionType.MULTIPLE_CHOICE, careerOptions)
+      ]
+    ),
+    createAssessment('Personality Assessment', 'Big Five personality traits evaluation', AssessmentType.PERSONALITY,
+      generateQuestions(10, QuestionType.LIKERT_SCALE, likertOptions)
+    ),
+    createAssessment('Math Skills Test', 'Evaluate mathematical reasoning', AssessmentType.APTITUDE,
+      [
+        ...generateQuestions(5, QuestionType.MULTIPLE_CHOICE, mathOptions),
+        { text: 'Explain your approach to solving complex math problems', type: QuestionType.OPEN_ENDED }
+      ]
+    ),
+    createAssessment('Language Proficiency', 'Assess reading and writing skills', AssessmentType.LEARNING_STYLE,
+      [
+        ...generateQuestions(4, QuestionType.LIKERT_SCALE, likertOptions),
+        { text: 'Write a short essay about your favorite book', type: QuestionType.OPEN_ENDED }
+      ]
+    )
   ]);
 
   // Create responses for each student
@@ -111,8 +103,8 @@ async function main() {
       });
 
       await prisma.response.createMany({
-        data: questions.map((question, index) => ({
-          value: createResponseValue(question.type, index),
+        data: questions.map(question => ({
+          value: createResponseValue(question.type),
           studentId: student.id,
           assessmentId: assessment.id,
           questionId: question.id
@@ -123,14 +115,38 @@ async function main() {
 
   // Generate reports
   await generateStudentReports(students);
-  await generateSchoolReports([springfieldSchool.school, oakridgeSchool.school]);
+  await generateSchoolReports(schools.map(s => s.school));
 
   console.log('Seed data created successfully!');
 }
 
 // Helper functions
+async function createSchool(name, adminEmail, state) {
+  const password = await hash('121245', 10);
+  return prisma.user.create({
+    data: {
+      email: adminEmail,
+      password,
+      role: 'SCHOOL_ADMIN',
+      school: {
+        create: {
+          name,
+          address: `${Math.floor(Math.random() * 1000)} Education Lane`,
+          city: name.split(' ')[0],
+          state,
+          country: 'USA',
+          phone: `(555) 555-${Math.floor(1000 + Math.random() * 9000)}`,
+          adminFirstName: 'Admin',
+          adminLastName: name.split(' ')[0]
+        }
+      }
+    },
+    include: { school: true }
+  });
+}
+
 async function createParent(email, firstName, lastName, phone) {
-  const password = await hash('parent123', 10);
+  const password = await hash('121245', 10);
   const user = await prisma.user.create({
     data: {
       email,
@@ -146,7 +162,7 @@ async function createParent(email, firstName, lastName, phone) {
 }
 
 async function createStudent(email, firstName, lastName, dob, grade, schoolId, parentIds) {
-  const password = await hash('student123', 10);
+  const password = await hash('121245', 10);
   const user = await prisma.user.create({
     data: {
       email,
@@ -177,9 +193,9 @@ async function createAssessment(title, description, type, questions) {
       status: 'PUBLISHED',
       questions: {
         create: questions.map((q, index) => ({
-          text: q.text,
+          text: q.text || `Question ${index + 1} about ${title}`,
           type: q.type,
-          options: q.options,
+          options: q.options || [],
           orderIndex: index + 1
         }))
       }
@@ -187,14 +203,28 @@ async function createAssessment(title, description, type, questions) {
   });
 }
 
-function createResponseValue(questionType, index) {
-  const responses = [
-    { selectedOption: '4' }, // Likert
-    { text: 'Quiet space with visual aids' }, // Open-ended
-    { selectedOption: '5' }, // Likert
-    { selectedOptions: ['2', '4'] } // Multiple choice
-  ];
-  return responses[index % responses.length];
+function generateQuestions(count, type, options) {
+  return Array.from({ length: count }, (_, i) => ({
+    text: `Sample question ${i + 1} for ${type}`,
+    type,
+    options
+  }));
+}
+
+function createResponseValue(questionType) {
+  const randomOption = (options) => 
+    options[Math.floor(Math.random() * options.length)].id;
+
+  switch(questionType) {
+    case QuestionType.LIKERT_SCALE:
+      return { selectedOption: randomOption(likertOptions) };
+    case QuestionType.MULTIPLE_CHOICE:
+      return { selectedOptions: [randomOption(careerOptions), randomOption(careerOptions)] };
+    case QuestionType.OPEN_ENDED:
+      return { text: 'Sample open-ended response generated at ' + new Date().toISOString() };
+    default:
+      return { text: 'Default response' };
+  }
 }
 
 const likertOptions = [
@@ -212,15 +242,26 @@ const careerOptions = [
   { id: '4', text: 'Technical analysis', value: 4 }
 ];
 
+const mathOptions = [
+  { id: '1', text: 'Algebra', value: 1 },
+  { id: '2', text: 'Geometry', value: 2 },
+  { id: '3', text: 'Calculus', value: 3 },
+  { id: '4', text: 'Statistics', value: 4 }
+];
+
 async function generateStudentReports(students) {
+  const strengths = ['Analytical', 'Creative', 'Organized', 'Collaborative', 'Persistent'];
+  const recommendations = ['Advanced courses', 'Tutoring', 'Extracurricular activities', 'Mentorship'];
+  
   for (const student of students) {
     await prisma.report.create({
       data: {
         studentId: student.id,
         data: {
-          strengths: ['Analytical thinking', 'Creativity'],
-          recommendations: ['Explore STEM programs', 'Join art club'],
-          personalityType: student.grade % 2 === 0 ? 'Type A' : 'Type B'
+          strengths: [strengths[Math.floor(Math.random() * strengths.length)], strengths[Math.floor(Math.random() * strengths.length)]],
+          recommendations: [recommendations[Math.floor(Math.random() * recommendations.length)]],
+          personalityType: ['Type A', 'Type B', 'Type C'][Math.floor(Math.random() * 3)],
+          averageScore: Math.floor(Math.random() * 40 + 60)
         }
       }
     });
@@ -229,31 +270,28 @@ async function generateStudentReports(students) {
 
 async function generateSchoolReports(schools) {
   for (const school of schools) {
-    await prisma.schoolReport.create({
-      data: {
+    // Create multiple reports per school
+    await prisma.schoolReport.createMany({
+      data: [{
         schoolId: school.id,
         type: SchoolReportType.GRADE_WISE,
         data: {
-          totalStudents: 150,
+          totalStudents: Math.floor(Math.random() * 100 + 100),
           averageScores: {
-            math: 78,
-            science: 82,
-            arts: 85
+            math: Math.floor(Math.random() * 40 + 60),
+            science: Math.floor(Math.random() * 40 + 60),
+            arts: Math.floor(Math.random() * 40 + 60)
           }
         }
-      }
-    });
-    
-    await prisma.schoolReport.create({
-      data: {
+      }, {
         schoolId: school.id,
         type: SchoolReportType.YEARLY,
         data: {
           academicYear: new Date().getFullYear(),
-          graduationRate: 96,
-          collegeAcceptance: 89
+          graduationRate: Math.floor(Math.random() * 20 + 80),
+          collegeAcceptance: Math.floor(Math.random() * 20 + 75)
         }
-      }
+      }]
     });
   }
 }

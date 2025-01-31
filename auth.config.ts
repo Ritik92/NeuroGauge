@@ -2,15 +2,18 @@
 import { AuthOptions, getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from '@prisma/client';
-import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 declare module "next-auth" {
   interface User {
+    id: string;
+    email: string;
     role?: string;
   }
 
   interface Session {
-    user?: User & {
+    user: User & {
+      id: string;
+      email: string;
       role?: string;
     };
   }
@@ -50,18 +53,18 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user }) {
       // Add role to the token
       if (user) {
-        token.id=user?.id
+        token.id = user.id;
+        token.email = user.email;
         token.role = user.role;
       }
       return token;
     },
-    async session({ session, token,user }) {
-      // Add role to the session
-      if(session.user){
-        session.user.role = user.role;
-        session.user.id=user.id
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.email = token.email as string;
+        session.user.role = token.role as string | undefined;
       }
-      
       return session;
     },
   },
