@@ -11,9 +11,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 export default async function TakeAssessmentPage({
   params
-}: {
-  params: { id: string }
-}) {
+}: any) {
   const session = await getServerSession()
   
   if (!session) {
