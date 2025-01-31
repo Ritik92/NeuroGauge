@@ -1,0 +1,188 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model - base model for all user types
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  role          UserRole
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Role-specific relations
+  student       Student?
+  parent        Parent?
+  school        School?
+}
+
+enum UserRole {
+  STUDENT
+  PARENT
+  SCHOOL_ADMIN
+  SYSTEM_ADMIN
+}
+
+// Student model
+model Student {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName       String
+  lastName        String
+  dateOfBirth     DateTime
+  grade           Int
+  
+  // Relations
+  school          School?   @relation(fields: [schoolId], references: [id])
+  schoolId        String?
+  parents         Parent[]
+  assessments     Assessment[]
+  responses       Response[]
+  reports         Report[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// Parent model
+model Parent {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName   String
+  lastName    String
+  phone       String?
+  
+  // Relations
+  students    Student[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Combined School and SchoolAdmin model
+model School {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  address     String
+  city        String
+  state       String
+  country     String
+  phone       String
+  adminFirstName String
+  adminLastName  String
+  
+  // Relations
+  students    Student[]
+  reports     SchoolReport[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Assessment model
+model Assessment {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  type        AssessmentType
+  status      AssessmentStatus @default(DRAFT)
+  
+  // Relations
+  questions   Question[]
+  students    Student[]
+  responses   Response[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum AssessmentType {
+  PERSONALITY
+  APTITUDE
+  INTEREST
+  LEARNING_STYLE
+}
+
+enum AssessmentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// Question model
+model Question {
+  id            String    @id @default(cuid())
+  text          String
+  type          QuestionType
+  options       Json?     // For MCQ: [{id: string, text: string, value: number}]
+  orderIndex    Int
+  
+  // Relations
+  assessment    Assessment @relation(fields: [assessmentId], references: [id])
+  assessmentId  String
+  responses     Response[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  LIKERT_SCALE
+  OPEN_ENDED
+}
+
+// Response model
+model Response {
+  id          String    @id @default(cuid())
+  value       Json      // The actual response value
+  
+  // Relations
+  student     Student   @relation(fields: [studentId], references: [id])
+  studentId   String
+  assessment  Assessment @relation(fields: [assessmentId], references: [id])
+  assessmentId String
+  question    Question  @relation(fields: [questionId], references: [id])
+  questionId  String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Individual Student Report
+model Report {
+  id          String    @id @default(cuid())
+  data        Json      // Structured report data
+  
+  // Relations
+  student     Student   @relation(fields: [studentId], references: [id])
+  studentId   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// School-wide Report
+model SchoolReport {
+  id          String    @id @default(cuid())
+  data        Json      // Aggregate report data
+  type        SchoolReportType
+  
+  // Relations
+  school      School    @relation(fields: [schoolId], references: [id])
+  schoolId    String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum SchoolReportType {
+  CLASS_WISE
+  GRADE_WISE
+  SCHOOL_WIDE
+  YEARLY
+}
