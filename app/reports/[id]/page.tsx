@@ -1,4 +1,4 @@
-import { getStudentReport } from "@/app/actions/report";
+import { getStudentReport } from "@/lib/actions/report";
 import { ReportInterface } from "@/components/report-interface";
 
 interface PageProps {

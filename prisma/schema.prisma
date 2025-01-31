@@ -93,6 +93,7 @@ model Assessment {
   id          String    @id @default(cuid())
   title       String
   description String
+  gradeLevel  Int[] 
   type        AssessmentType
   status      AssessmentStatus @default(DRAFT)
   

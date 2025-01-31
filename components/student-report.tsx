@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
-import { getStudentReports } from '@/app/actions/report';
+import { getStudentReports } from '@/lib/actions/report';
 import Link from 'next/link';
 
 

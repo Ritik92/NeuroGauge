@@ -69,31 +69,92 @@ for (const [schoolIndex, school] of schools.entries()) {
 
   // Create assessments (6 assessments)
   const assessments = await Promise.all([
-    createAssessment('Learning Style Assessment', 'Determine learning preferences', AssessmentType.LEARNING_STYLE, 
-      generateQuestions(5, QuestionType.LIKERT_SCALE, likertOptions)
-    ),
-    createAssessment('Career Aptitude Test', 'Identify suitable career paths', AssessmentType.APTITUDE, 
-      [
-        ...generateQuestions(3, QuestionType.LIKERT_SCALE, likertOptions),
-        ...generateQuestions(2, QuestionType.MULTIPLE_CHOICE, careerOptions)
-      ]
-    ),
-    createAssessment('Personality Assessment', 'Big Five personality traits evaluation', AssessmentType.PERSONALITY,
-      generateQuestions(10, QuestionType.LIKERT_SCALE, likertOptions)
-    ),
-    createAssessment('Math Skills Test', 'Evaluate mathematical reasoning', AssessmentType.APTITUDE,
-      [
-        ...generateQuestions(5, QuestionType.MULTIPLE_CHOICE, mathOptions),
-        { text: 'Explain your approach to solving complex math problems', type: QuestionType.OPEN_ENDED }
-      ]
-    ),
-    createAssessment('Language Proficiency', 'Assess reading and writing skills', AssessmentType.LEARNING_STYLE,
-      [
-        ...generateQuestions(4, QuestionType.LIKERT_SCALE, likertOptions),
-        { text: 'Write a short essay about your favorite book', type: QuestionType.OPEN_ENDED }
-      ]
-    )
+    // Learning Style Assessments (Examples - expand as needed)
+    createAssessment({
+      title: 'Learning Style Assessment (Grades 1-3)',
+      description: 'Determine learning preferences for early elementary',
+      type: AssessmentType.LEARNING_STYLE,
+      gradeLevel: [1, 2, 3],
+      questions: [
+        { text: 'I like to learn by doing things, not just listening or reading.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        { text: 'I remember things better when I see them.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        { text: 'I enjoy working in groups and talking about ideas.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        { text: 'I prefer quiet places to study so I can concentrate.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        { text: 'I learn best when I can move around or take breaks.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        // ... more questions
+      ],
+    }),
+    // ... more Learning Style Assessments for other grade bands (4-6, 7-9, 10-12)
+
+    // Career Aptitude Tests (Examples - expand as needed)
+    createAssessment({
+      title: 'Career Aptitude Test (Grades 7-9)',
+      description: 'Identify potential career paths for middle school',
+      type: AssessmentType.APTITUDE,
+      gradeLevel: [7, 8, 9],
+      questions: [
+        { text: 'I enjoy solving puzzles and riddles.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        { text: 'I am interested in science and technology.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        { text: 'I like working with my hands.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        { text: 'I am good at explaining things to others.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        { text: 'I am creative and enjoy making things.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        // ... more questions
+      ],
+    }),
+    // ... more Career Aptitude Tests for other grade bands (10-12)
+
+    // Personality Assessments (Examples - expand as needed)
+    createAssessment({
+      title: 'Personality Assessment (Grades 7-12)',
+      description: 'Big Five personality traits evaluation',
+      type: AssessmentType.PERSONALITY,
+      gradeLevel: [7, 8, 9, 10, 11, 12],
+      questions: [
+        { text: 'I am generally outgoing and sociable.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        { text: 'I tend to be anxious and worry easily.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        { text: 'I am open to new experiences and ideas.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        { text: 'I am generally cooperative and considerate.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        { text: 'I am organized and like to plan ahead.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        // ... more questions
+      ],
+    }),
+    // ... potentially other Personality Assessments if needed
+
+
+    // Example: A more specific test (Grades 10-12, Science Focus)
+    createAssessment({
+      title: 'Science Interest Inventory (Grades 10-12)',
+      description: 'Explore your interests in different science fields',
+      type: AssessmentType.INTEREST, // New type: INTEREST
+      gradeLevel: [10, 11, 12],
+      questions: [
+        { text: 'I am fascinated by the natural world.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        { text: 'I enjoy conducting experiments and analyzing data.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        { text: 'I am interested in learning about the human body.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        { text: 'I would like to work in a lab or research setting.', type: QuestionType.LIKERT_SCALE, options: likertOptions },
+        // ... more questions
+      ],
+    }),
   ]);
+  async function createAssessment({ title, description, type, gradeLevel, questions }) {
+    return prisma.assessment.create({
+      data: {
+        title,
+        description,
+        type,
+        status: 'PUBLISHED',
+        gradeLevel, // Include gradeLevel here
+        questions: {
+          create: questions.map((q, index) => ({
+            text: q.text, // Use the provided question text
+            type: q.type,
+            options: q.options || [],
+            orderIndex: q.orderIndex || index + 1, // Allow custom orderIndex or default
+          })),
+        },
+      },
+    });
+  }
 
   // Create responses for each student
   for (const student of students) {

@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { QuestionType } from '@prisma/client';
 import { useState } from 'react';
-import { submitAssessmentResponse } from '@/app/actions/response';
+import { submitAssessmentResponse } from '@/lib/actions/response';
 
 export default function AssessmentInterface({ assessment }: { assessment: any }) {
   const { register, handleSubmit, formState } = useForm();

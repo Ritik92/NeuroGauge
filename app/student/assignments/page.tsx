@@ -28,6 +28,7 @@ export default async function AssignmentsPage() {
   const assignments = await prisma.assessment.findMany({
     where: {
       status: 'PUBLISHED',
+      gradeLevel: { has: student.grade }
       // Add any school-specific logic if needed
       // schoolId: student.schoolId 
     },
