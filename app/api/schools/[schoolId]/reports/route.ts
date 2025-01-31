@@ -5,7 +5,7 @@ const prisma = new PrismaClient()
 
 export async function GET(
   request: Request,
-  { params }: { params: { schoolId: string } }
+  { params }: any
 ) {
   try {
     const reports = await prisma.schoolReport.findMany({

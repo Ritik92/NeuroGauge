@@ -16,7 +16,7 @@ async function getSchool(schoolId: string) {
 export default async function SchoolReportPage({
   params,
 }: {
-  params: { schoolId: string };
+  params: any;
 }) {
   const school = await getSchool(params.schoolId);
   
