@@ -33,6 +33,11 @@ export function SchoolDashboardLayout({ user,school, children }: { user: any; sc
                       Home
                     </NavigationMenuLink>
                   </Button>
+                  <Button variant="ghost" asChild>
+                    <NavigationMenuLink href="/dashboard/school/addstudents">
+                      Add Students
+                    </NavigationMenuLink>
+                  </Button>
                   {user.role === 'SCHOOL_ADMIN' && (
                     <>
                       <Button variant="ghost" asChild>
