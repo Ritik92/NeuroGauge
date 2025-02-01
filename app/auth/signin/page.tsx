@@ -44,7 +44,7 @@ const AuthPage = () => {
       console.log(result)
       if (result?.ok) {
         toast.success('Successfully signed in!');
-        router.push('/dashboard/admin');
+        router.push('/auth');
         router.refresh();
       }
     } catch (error) {

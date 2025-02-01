@@ -24,7 +24,7 @@ export function AssignmentList({ assignments }: { assignments: Assignment[] }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
         >
-          <Link href={`/student/assignments/${assignment.id}`}>
+          <Link href={`/dashboard/student/assignments/${assignment.id}`}>
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardHeader>
                 <div className="flex justify-between items-start">

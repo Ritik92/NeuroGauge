@@ -26,7 +26,7 @@ interface SchoolReport {
   createdAt: string;
 }
 
-export function SchoolReports({ schoolId }: { schoolId: string }) {
+export function   SchoolReports({ schoolId }: { schoolId: string }) {
   const [reports, setReports] = useState<SchoolReport[]>([]);
   const [loading, setLoading] = useState(true);
 

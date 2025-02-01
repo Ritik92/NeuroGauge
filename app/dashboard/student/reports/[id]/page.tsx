@@ -1,5 +1,6 @@
+import ReportInterface from "@/components/report-interface";
 import { getStudentReport } from "@/lib/actions/report";
-import { ReportInterface } from "@/components/report-interface";
+
 
 interface PageProps {
   params: { id: string };
@@ -11,7 +12,7 @@ export default async function ReportPage({ params }: any) {
   if (!report) return <div>Report not found</div>;
   return (
     <div className="container py-12">
-      <ReportInterface report={report} />
+      <ReportInterface />
     </div>
   );
 }

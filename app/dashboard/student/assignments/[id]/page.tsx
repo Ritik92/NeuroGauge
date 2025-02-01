@@ -33,8 +33,6 @@ export default async function TakeAssessmentPage({
 
   return (
     <div className="container mx-auto py-8 max-w-3xl">
-      <h1 className="text-3xl font-bold mb-2">{assessment.title}</h1>
-      <p className="text-muted-foreground mb-8">{assessment.description}</p>
       <AssessmentForm assessment={assessment} />
     </div>
   )
