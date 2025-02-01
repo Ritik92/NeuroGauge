@@ -1,6 +1,7 @@
 // app/dashboard/parent/reports/[id]/page.tsx
+import ReportInterface from "@/components/report-interface";
 import { getParentReport } from "@/lib/actions/report";
-import { ReportInterface } from "@/components/report-interface";
+
 import { notFound } from "next/navigation";
 
 interface PageProps {
@@ -12,10 +13,10 @@ export default async function ParentReportPage({ params }: any) {
   try {
     const report = await getParentReport(params.id);
     if (!report) return notFound();
-
+//removed old reportInterface
     return (
       <div className="container py-12">
-        <ReportInterface report={report} />
+        <ReportInterface  /> 
       </div>
     );
   } catch (error) {
