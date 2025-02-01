@@ -1,7 +1,7 @@
 'use client'
-
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,12 +9,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { signIn } from 'next-auth/react'
+import { Brain, User, School, Users } from 'lucide-react'
 
 export default function SignupPage() {
   const router = useRouter()
-  const [error, setError] = useState<string>('')
+  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [role, setRole] = useState<'STUDENT' | 'PARENT' | 'SCHOOL_ADMIN'>('STUDENT')
+  const [role, setRole] = useState('STUDENT')
 
   const [formData, setFormData] = useState({
     email: '',
@@ -25,21 +26,20 @@ export default function SignupPage() {
     dateOfBirth: '',
     grade: '',
     phone: '',
-    // School admin specific fields
     name: '',
     address: '',
     city: '',
     state: '',
     country: '',
-    schoolId: '', // Only for student
+    schoolId: '',
   })
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -50,7 +50,6 @@ export default function SignupPage() {
       return
     }
 
-    // Prepare data based on role
     const signupData = {
       email: formData.email,
       password: formData.password,
@@ -93,7 +92,6 @@ export default function SignupPage() {
         password: signupData.password,
         redirect: false,
       })
-      console.log(res)
       
       router.push('/auth')
     } catch (err) {
@@ -103,209 +101,328 @@ export default function SignupPage() {
     }
   }
 
+  const roleIcons = {
+    STUDENT: <User className="w-5 h-5" />,
+    PARENT: <Users className="w-5 h-5" />,
+    SCHOOL_ADMIN: <School className="w-5 h-5" />
+  }
+
   return (
-    <div className="container mx-auto max-w-md py-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>Sign Up</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="role">Role</Label>
-              <Select
-                value={role}
-                onValueChange={(value: 'STUDENT' | 'PARENT' | 'SCHOOL_ADMIN') => setRole(value)}
+    <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-blue-50 py-12 px-4">
+      <div className="max-w-md mx-auto relative">
+        {/* Decorative elements */}
+        <motion.div
+          className="absolute -z-10 -top-10 -left-10 w-64 h-64 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70"
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, 90, 0],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+        <motion.div
+          className="absolute -z-10 -bottom-10 -right-10 w-64 h-64 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-70"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            rotate: [90, 0, 90],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <Card className="backdrop-blur-sm bg-white/90 shadow-xl border-0">
+            <CardHeader className="text-center pb-2">
+              <motion.div 
+                className="flex items-center justify-center space-x-2 mb-4"
+                whileHover={{ scale: 1.05 }}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="STUDENT">Student</SelectItem>
-                  <SelectItem value="PARENT">Parent</SelectItem>
-                  <SelectItem value="SCHOOL_ADMIN">School Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="password">Password</Label>
-              <Input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="firstName">First Name</Label>
-              <Input
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-
-            {role === 'STUDENT' && (
-              <>
-                <div>
-                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                  <Input
-                    type="date"
-                    name="dateOfBirth"
-                    value={formData.dateOfBirth}
-                    onChange={handleInputChange}
-                    required
-                  />
+                <div className="relative">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-0"
+                  >
+                    <Brain className="w-8 h-8 text-blue-600" />
+                  </motion.div>
+                  <Brain className="w-8 h-8 text-blue-600 opacity-50" />
+                </div>
+                <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  NeuroGauge
+                </span>
+              </motion.div>
+              <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="role">I am a</Label>
+                  <Select
+                    value={role}
+                    onValueChange={(value) => setRole(value)}
+                  >
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries({
+                        STUDENT: 'Student',
+                        PARENT: 'Parent',
+                        SCHOOL_ADMIN: 'School Admin'
+                      }).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          <div className="flex items-center space-x-2">
+                            {roleIcons[value]}
+                            <span>{label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <div>
-                  <Label htmlFor="grade">Grade</Label>
-                  <Input
-                    type="number"
-                    name="grade"
-                    value={formData.grade}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="space-y-4"
+                >
+                  {/* Base fields */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleInputChange}
+                        required
+                        className="bg-white"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleInputChange}
+                        required
+                        className="bg-white"
+                      />
+                    </div>
+                  </div>
 
-                <div>
-                  <Label htmlFor="schoolId">School ID</Label>
-                  <Input
-                    name="schoolId"
-                    value={formData.schoolId}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              </>
-            )}
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                      className="bg-white"
+                    />
+                  </div>
 
-            {role === 'PARENT' && (
-              <div>
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                />
-              </div>
-            )}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="password">Password</Label>
+                      <Input
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        required
+                        className="bg-white"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="confirmPassword">Confirm</Label>
+                      <Input
+                        type="password"
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleInputChange}
+                        required
+                        className="bg-white"
+                      />
+                    </div>
+                  </div>
 
-            {role === 'SCHOOL_ADMIN' && (
-              <>
-                <div>
-                  <Label htmlFor="name">School Name</Label>
-                  <Input
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
+                  <AnimatePresence mode="wait">
+                    {/* Role-specific fields */}
+                    {role === 'STUDENT' && (
+                      <motion.div
+                        key="student"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="space-y-4"
+                      >
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                            <Input
+                              type="date"
+                              name="dateOfBirth"
+                              value={formData.dateOfBirth}
+                              onChange={handleInputChange}
+                              required
+                              className="bg-white"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="grade">Grade</Label>
+                            <Input
+                              type="number"
+                              name="grade"
+                              value={formData.grade}
+                              onChange={handleInputChange}
+                              required
+                              className="bg-white"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="schoolId">School ID</Label>
+                          <Input
+                            name="schoolId"
+                            value={formData.schoolId}
+                            onChange={handleInputChange}
+                            required
+                            className="bg-white"
+                          />
+                        </div>
+                      </motion.div>
+                    )}
 
-                <div>
-                  <Label htmlFor="address">School Address</Label>
-                  <Input
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
+                    {role === 'PARENT' && (
+                      <motion.div
+                        key="parent"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                      >
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input
+                          type="tel"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          className="bg-white"
+                        />
+                      </motion.div>
+                    )}
 
-                <div>
-                  <Label htmlFor="city">City</Label>
-                  <Input
-                    name="city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
+                    {role === 'SCHOOL_ADMIN' && (
+                      <motion.div
+                        key="admin"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="space-y-4"
+                      >
+                        <div>
+                          <Label htmlFor="name">School Name</Label>
+                          <Input
+                            name="name"
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            required
+                            className="bg-white"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="address">School Address</Label>
+                          <Input
+                            name="address"
+                            value={formData.address}
+                            onChange={handleInputChange}
+                            required
+                            className="bg-white"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="city">City</Label>
+                            <Input
+                              name="city"
+                              value={formData.city}
+                              onChange={handleInputChange}
+                              required
+                              className="bg-white"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="state">State</Label>
+                            <Input
+                              name="state"
+                              value={formData.state}
+                              onChange={handleInputChange}
+                              required
+                              className="bg-white"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="country">Country</Label>
+                          <Input
+                            name="country"
+                            value={formData.country}
+                            onChange={handleInputChange}
+                            required
+                            className="bg-white"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="phone">Phone Number</Label>
+                          <Input
+                            type="tel"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            required
+                            className="bg-white"
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-                <div>
-                  <Label htmlFor="state">State</Label>
-                  <Input
-                    name="state"
-                    value={formData.state}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
 
-                <div>
-                  <Label htmlFor="country">Country</Label>
-                  <Input
-                    name="country"
-                    value={formData.country}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              </>
-            )}
-
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing up...' : 'Sign Up'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Button
+                      type="submit"
+                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 transition-opacity"
+                      disabled={loading}
+                    >
+                      {loading ? 'Creating Account...' : 'Create Account'}
+                    </Button>
+                  </motion.div>
+                </motion.div>
+              </form>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
     </div>
   )
 }
+
