@@ -19,7 +19,7 @@ export default async function SchoolsPage() {
       <h1 className="text-3xl font-bold mb-6">Schools</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {schools.map((school) => (
-          <Link key={school.id} href={`/school/${school.id}/reports`}>
+          
             <Card className="hover:bg-muted/50 transition-colors">
               <CardHeader>
                 <CardTitle>{school.name}</CardTitle>
@@ -30,7 +30,7 @@ export default async function SchoolsPage() {
                 </p>
               </CardContent>
             </Card>
-          </Link>
+        
         ))}
       </div>
     </div>

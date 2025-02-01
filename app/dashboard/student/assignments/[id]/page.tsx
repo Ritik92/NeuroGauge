@@ -2,7 +2,7 @@
 import { getServerSession } from "next-auth/next"
 import { redirect } from "next/navigation"
 
-import AssessmentForm from '../../../../components/student/AssesementForm'
+import AssessmentForm from '../../../../../components/student/AssesementForm'
 
 
 import { PrismaClient } from '@prisma/client'

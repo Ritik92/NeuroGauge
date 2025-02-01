@@ -5,21 +5,21 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
-import { getStudentReports } from '@/lib/actions/report';
+import { getmyStudentReports } from '@/lib/actions/report';
 import Link from 'next/link';
 
 
 
-export function ReportList() {
-  const [reports, setReports] = useState([]);
+export function ParentReportList() {
+  const [reports, setReports] = useState(undefined);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadReports = async () => {
-      const res = await getStudentReports();
+      const res = await getmyStudentReports();
       console.log(res)
       let data=res
-      setReports(data || []);
+      setReports(data);
       setLoading(false);
     };
     loadReports();
@@ -48,7 +48,7 @@ export function ReportList() {
             </CardHeader>
             <CardContent>
               <Button className="w-full" asChild>
-                <Link href={`/dashboard/student/reports/${report.id}`}>View Details</Link>
+                <Link href={`/dashboard/parent/reports/${report.id}`}>View Details</Link>
               </Button>
             </CardContent>
           </Card>
