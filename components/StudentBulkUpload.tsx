@@ -99,6 +99,7 @@ export function StudentBulkUpload() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
+          {/* @ts-ignore */}
           <motion.div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300

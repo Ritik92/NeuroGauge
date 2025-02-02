@@ -2,8 +2,48 @@
 import { PrismaClient } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
+import { z } from 'zod'
 
 const prisma = new PrismaClient()
+
+// Type for assessment progress
+type AssessmentProgress = {
+  assessmentId: string
+  title: string
+  totalQuestions: number
+  answeredQuestions: number
+  progressPercentage: number
+}
+
+// Type for child stats
+type ChildStats = {
+  totalAssessments: number
+  completedAssessments: number
+  pendingAssessments: number
+  assessmentProgress: AssessmentProgress[]
+}
+
+// Type for API response
+type ApiResponse = {
+  parent: {
+    name: string
+    phone: string | null
+  }
+  stats: {
+    totalChildren: number
+    totalAssessments: number
+    completedAssessments: number
+    schoolsCount: number
+  }
+  children: Array<{
+    id: string
+    name: string
+    grade: number
+    school: string | null
+    stats: ChildStats
+    latestReport: { id: string; data: any } | null
+  }>
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,63 +52,137 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get the parent data based on email
-    const user = await prisma.user.findUnique({
+    // Get parent data with proper type checking
+    const parent = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { parent: true }
+      include: {
+        parent: true
+      }
     })
 
-    if (!user?.parent) {
+    if (!parent?.parent) {
       return NextResponse.json({ error: 'Parent not found' }, { status: 404 })
     }
 
-    // Get parent-specific stats and children data
+    // Get children data with all necessary relations
     const children = await prisma.student.findMany({
-      where: { parents: { some: { id: user.parent.id } } },
-      include: {
+      where: {
+        parents: {
+          some: { id: parent.parent.id }
+        }
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        grade: true,
         school: {
-          select: { name: true, city: true, state: true }
+          select: {
+            name: true
+          }
         },
-        assessments: true,
-        responses: true,
+        assessments: {
+          where: {
+            status: 'PUBLISHED'
+          },
+          select: {
+            id: true,
+            title: true,
+            questions: {
+              select: {
+                id: true
+              }
+            }
+          }
+        },
+        responses: {
+          select: {
+            assessmentId: true,
+            questionId: true,
+            assessment: {
+              select: {
+                status: true
+              }
+            }
+          }
+        },
         reports: {
-          orderBy: { createdAt: 'desc' },
-          take: 1
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 1,
+          select: {
+            id: true,
+            data: true
+          }
         }
       }
     })
 
-    // Calculate aggregate stats
-    const stats = {
-      totalChildren: children.length,
-      totalAssessments: children.reduce((sum, child) => sum + child.assessments.length, 0),
-      completedAssessments: children.reduce((sum, child) => sum + child.responses.length, 0),
-      schoolsCount: new Set(children.map(child => child.school?.name)).size
+    // Process data for response
+    const processedData: ApiResponse = {
+      parent: {
+        name: `${parent.parent.firstName} ${parent.parent.lastName}`,
+        phone: parent.parent.phone
+      },
+      stats: {
+        totalChildren: children.length,
+        totalAssessments: children.reduce((sum, child) => sum + child.assessments.length, 0),
+        completedAssessments: children.reduce((sum, child) => {
+          return sum + child.assessments.filter(assessment => {
+            const totalQuestions = assessment.questions.length
+            const answeredQuestions = new Set(
+              child.responses
+                .filter(r => r.assessmentId === assessment.id && r.assessment.status === 'PUBLISHED')
+                .map(r => r.questionId)
+            ).size
+            return totalQuestions > 0 && answeredQuestions === totalQuestions
+          }).length
+        }, 0),
+        schoolsCount: new Set(children.map(child => child.school?.name).filter(Boolean)).size
+      },
+      children: children.map(child => {
+        const assessmentProgress: AssessmentProgress[] = child.assessments.map(assessment => {
+          const totalQuestions = assessment.questions.length
+          const answeredQuestions = new Set(
+            child.responses
+              .filter(r => r.assessmentId === assessment.id && r.assessment.status === 'PUBLISHED')
+              .map(r => r.questionId)
+          ).size
+
+          return {
+            assessmentId: assessment.id,
+            title: assessment.title,
+            totalQuestions,
+            answeredQuestions,
+            progressPercentage: totalQuestions === 0 ? 0 : 
+              Math.round((answeredQuestions / totalQuestions) * 100)
+          }
+        })
+
+        const completedAssessments = assessmentProgress.filter(
+          ap => ap.progressPercentage === 100
+        ).length
+
+        return {
+          id: child.id,
+          name: `${child.firstName} ${child.lastName}`,
+          grade: child.grade,
+          school: child.school?.name ?? null,
+          stats: {
+            totalAssessments: child.assessments.length,
+            completedAssessments,
+            pendingAssessments: child.assessments.length - completedAssessments,
+            assessmentProgress
+          },
+          latestReport: child.reports[0] ?? null
+        }
+      })
     }
 
-    // Process children data for display
-    const childrenData = children.map(child => ({
-      id: child.id,
-      name: `${child.firstName} ${child.lastName}`,
-      grade: child.grade,
-      school: child.school?.name,
-      stats: {
-        totalAssessments: child.assessments.length,
-        completedAssessments: child.responses.length,
-        pendingAssessments: child.assessments.length - child.responses.length
-      },
-      latestReport: child.reports[0] || null
-    }))
-
-    return NextResponse.json({
-      parent: {
-        name: `${user.parent.firstName} ${user.parent.lastName}`,
-        phone: user.parent.phone
-      },
-      stats,
-      children: childrenData
-    })
+    return NextResponse.json(processedData)
   } catch (error) {
+    console.error('Parent stats error:', error)
     return NextResponse.json(
       { error: 'Failed to fetch parent stats' },
       { status: 500 }
