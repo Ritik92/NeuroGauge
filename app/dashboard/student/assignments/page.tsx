@@ -14,23 +14,23 @@ export default async function AssignmentsPage() {
     redirect('/login')
   }
 
-  // First get the student record
   const student = await prisma.student.findUnique({
     where: { userId: session.user.id },
     include: { school: true }
   })
 
   if (!student) {
-    return <div>Student record not found</div>
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="text-gray-500 text-lg">Student record not found</div>
+      </div>
+    )
   }
 
-  // Now get assessments for the student's school
   const assignments = await prisma.assessment.findMany({
     where: {
       status: 'PUBLISHED',
       gradeLevel: { has: student.grade }
-      // Add any school-specific logic if needed
-      // schoolId: student.schoolId 
     },
     include: {
       questions: true,
@@ -42,15 +42,22 @@ export default async function AssignmentsPage() {
     }
   })
 
-  // Add completion status
   const assignmentsWithStatus = assignments.map(assessment => ({
     ...assessment,
     completed: assessment.responses.length > 0
   }))
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8">My Assignments</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+          My Assignments
+        </h1>
+        <p className="text-gray-600 mt-2">
+          Complete your assessments to unlock personalized insights
+        </p>
+      </div>
+      
       <AssignmentList assignments={assignmentsWithStatus} />
     </div>
   )

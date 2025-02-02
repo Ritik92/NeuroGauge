@@ -1,14 +1,14 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { motion, useScroll, useSpring } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { Brain, BookOpen, FileText, LogOut, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Brain, LogOut, Menu, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
-export default function SchoolDashboardLayout({ user, school, children }: { user: any; school: any; children: any }) {
+const StudentDashboardLayout = ({ children }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
@@ -29,12 +29,9 @@ export default function SchoolDashboardLayout({ user, school, children }: { user
   };
 
   const links = [
-    { name: 'Home', href: '/dashboard/school' },
-    { name: 'Add Students', href: '/dashboard/school/addstudents' },
-    ...(user.role === 'SCHOOL_ADMIN' ? [
-      { name: 'Reports', href: `/dashboard/school/${school.id}/reports` },
-      { name: 'Student List', href: '/dashboard/school/studentlist' }
-    ] : [])
+    { name: 'Dashboard', href: '/dashboard/student', icon: Brain },
+    { name: 'Assignments', href: '/dashboard/student/assignments', icon: BookOpen },
+    { name: 'Reports', href: '/dashboard/student/reports', icon: FileText }
   ];
 
   return (
@@ -61,7 +58,7 @@ export default function SchoolDashboardLayout({ user, school, children }: { user
                 <Brain className="w-6 h-6 text-blue-600 opacity-50 absolute inset-0 m-auto" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent hidden sm:block">
-                School Dashboard
+                Student Portal
               </span>
             </motion.div>
 
@@ -79,6 +76,7 @@ export default function SchoolDashboardLayout({ user, school, children }: { user
                     className="relative hover:text-blue-600"
                   >
                     <Link href={link.href} className="flex items-center space-x-2">
+                      <link.icon className="h-4 w-4" />
                       <span>{link.name}</span>
                     </Link>
                   </Button>
@@ -135,7 +133,10 @@ export default function SchoolDashboardLayout({ user, school, children }: { user
                     className="w-full justify-start my-1 hover:bg-blue-50"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <Link href={link.href}>{link.name}</Link>
+                    <Link href={link.href} className="flex items-center space-x-2">
+                      <link.icon className="h-5 w-5 mr-2" />
+                      <span>{link.name}</span>
+                    </Link>
                   </Button>
                 </motion.div>
               ))}
@@ -169,3 +170,5 @@ export default function SchoolDashboardLayout({ user, school, children }: { user
     </div>
   );
 }
+
+export default StudentDashboardLayout;

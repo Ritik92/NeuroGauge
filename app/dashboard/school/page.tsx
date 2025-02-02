@@ -4,8 +4,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/auth.config';
 import StudentsList from '@/components/StudentList';
 import DashboardLayout from '../admin/layout';
-import { SchoolDashboardLayout } from '@/components/SchoolDashboardLayout';
-import { SchoolCard, StatsCard } from '@/components/SchoolCard';
+
+import {SchoolCard ,  StatsCard } from '@/components/SchoolCard';
+import SchoolDashboardLayout from '@/components/SchoolDashboardLayout';
 const prisma = new PrismaClient()
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -32,8 +33,7 @@ export default async function DashboardPage() {
   
 
   return (
-    <SchoolDashboardLayout user={user} school={school}>
-     {user?.role === 'SCHOOL_ADMIN' && school && (
+   
         <>
           <SchoolCard school={school} />
           <StatsCard
@@ -44,7 +44,5 @@ export default async function DashboardPage() {
           />
         </>
       )}
-      {/* Add other role-specific cards */}
-    </SchoolDashboardLayout>
-  );
-}
+   
+  
