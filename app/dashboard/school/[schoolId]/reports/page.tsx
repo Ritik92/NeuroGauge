@@ -241,6 +241,7 @@ export default function SchoolPsychometricDashboard() {
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
                   >
                     {schoolData.metrics.academic[level].map((subject) => (
+                      //@ts-ignore
                       <MetricCard
                         key={subject.name}
                         title={subject.name}
