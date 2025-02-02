@@ -80,6 +80,8 @@ model School {
   phone       String
   adminFirstName String
   adminLastName  String
+  isActive    Boolean   @default(false)  // Will be true after payment
+  payments    Payment[]
   
   // Relations
   students    Student[]
@@ -87,7 +89,25 @@ model School {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
+model Payment {
+  id              String    @id @default(cuid())
+  amount          Decimal   @db.Decimal(10, 2)
+  status          PaymentStatus
+  razorpayOrderId String?   @unique
+  razorpayPaymentId String? @unique
+  
+  school      School    @relation(fields: [schoolId], references: [id])
+  schoolId    String
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
 
+enum PaymentStatus {
+  PENDING
+  SUCCESSFUL
+  FAILED
+}
 // Assessment model
 model Assessment {
   id          String    @id @default(cuid())

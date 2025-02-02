@@ -58,6 +58,7 @@ async function clearDatabase() {
       prisma.school.deleteMany(),
       prisma.user.deleteMany(),
     ]);
+    
     console.log('Database cleared successfully');
   } catch (error) {
     console.error('Error clearing database:', error);
