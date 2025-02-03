@@ -6,6 +6,7 @@ import {
   Sparkles, Trophy, Target, ArrowRight, Check,
   MenuIcon, X, GraduationCap, LineChart, BookOpen
 } from 'lucide-react';
+import Link from 'next/link';
 
 const LandingPage = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -132,12 +133,15 @@ const LandingPage = () => {
 
             {/* CTA Buttons */}
             <div className="hidden md:flex space-x-4">
+              <Link href={'/auth/signin'}>
+              
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="px-6 py-2 rounded-full text-blue-600 border border-blue-600 hover:bg-blue-50 transition-colors"              >
                 Login
               </motion.button>
+              </Link>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
