@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Script from 'next/script';
 import { Button } from '@/components/ui/button';
@@ -28,13 +28,26 @@ declare global {
 }
 
 export function StudentBulkUpload() {
-  const router=useRouter();
+  const router = useRouter();
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [parsedData, setParsedData] = useState<CSVRow[]>([]);
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'completed'>('pending');
   const [loading, setLoading] = useState(false);
+  const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
+  useEffect(() => {
+    // Check if Razorpay is loaded
+    const checkRazorpayLoaded = () => {
+      if (window.Razorpay) {
+        setIsRazorpayLoaded(true);
+      }
+    }; // Check immediately and also set up an interval
+    checkRazorpayLoaded();
+    const interval = setInterval(checkRazorpayLoaded, 1000);
 
+    // Clean up interval
+    return () => clearInterval(interval);
+  }, []);
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     try {
@@ -97,8 +110,12 @@ export function StudentBulkUpload() {
       setProgress(0);
     }
   };
-
   const handlePayment = async () => {
+    if (!isRazorpayLoaded) {
+      toast.error('Payment system is still loading. Please try again in a moment.');
+      return;
+    }
+
     try {
       setLoading(true);
       setPaymentStatus('processing');
@@ -113,14 +130,13 @@ export function StudentBulkUpload() {
       // Initialize Razorpay
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: amount * 100, // Converting to paise
+        amount: amount * 100,
         currency: 'INR',
         name: 'School Assessment Platform',
         description: `Payment for ${parsedData.length} students`,
         order_id: orderId,
         handler: async function (response: any) {
           try {
-            // Verify payment
             const verificationResponse = await axios.post('/api/verify-payment', {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
@@ -130,7 +146,6 @@ export function StudentBulkUpload() {
             if (verificationResponse.data.success) {
               setPaymentStatus('completed');
               toast.success('Payment successful');
-              // Now proceed with student upload
               await handleUpload();
             } else {
               toast.error('Payment verification failed');
@@ -160,12 +175,16 @@ export function StudentBulkUpload() {
       setLoading(false);
     }
   };
-
   return (
     <>
       <Script 
         src="https://checkout.razorpay.com/v1/checkout.js"
         strategy="beforeInteractive"
+        onLoad={() => setIsRazorpayLoaded(true)}
+        onError={() => {
+          console.error('Failed to load Razorpay script');
+          toast.error('Failed to load payment system');
+        }}
       />
       <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-indigo-50 py-8 px-4">
         {/* Rest of your component JSX remains the same */}
