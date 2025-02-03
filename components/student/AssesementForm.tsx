@@ -6,128 +6,121 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Brain, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-import { submitAssessmentResponse } from '@/lib/actions/response';
+import { Textarea } from '@/components/ui/textarea';
 
 const questions = [
+  // Cognitive Abilities
   {
     id: 'analytical_thinking',
     type: 'LIKERT_SCALE',
-    text: 'When faced with a complex problem, I prefer breaking it down into smaller, manageable parts.',
+    text: 'When faced with complex problems, I systematically analyze all components before making decisions.',
     category: 'Analytical Thinking'
   },
   {
-    id: 'creative_reasoning',
-    type: 'LIKERT_SCALE',
-    text: 'I often come up with unique solutions to problems that others might not think of.',
-    category: 'Creative Reasoning'
-  },
-  {
-    id: 'problem_solving',
+    id: 'cognitive_flexibility',
     type: 'MULTIPLE_CHOICE',
-    text: 'When solving a puzzle, which approach do you typically take?',
-    category: 'Problem Solving',
+    text: 'When presented with conflicting information, I typically:',
+    category: 'Cognitive Flexibility',
     options: [
-      { id: 'ps1', text: 'Look for patterns immediately', value: 'patterns' },
-      { id: 'ps2', text: 'Try different solutions systematically', value: 'systematic' },
-      { id: 'ps3', text: 'Start with what worked in similar situations', value: 'experience' },
-      { id: 'ps4', text: 'Visualize the entire problem first', value: 'visual' }
+      { id: 'cf1', text: 'Seek additional data to resolve contradictions', value: 'data-driven' },
+      { id: 'cf2', text: 'Consider multiple perspectives simultaneously', value: 'integrative' },
+      { id: 'cf3', text: 'Re-examine my initial assumptions', value: 'reflective' },
+      { id: 'cf4', text: 'Focus on the most credible source', value: 'selective' }
     ]
   },
   {
-    id: 'memory_recall',
+    id: 'metacognition',
+    type: 'OPEN_ENDED',
+    text: 'Describe a time when you had to adjust your learning strategy to master a new skill.',
+    category: 'Metacognition'
+  },
+
+  // Emotional Intelligence
+  {
+    id: 'emotional_awareness',
     type: 'LIKERT_SCALE',
-    text: 'I can easily remember and recall details from something I read several days ago.',
-    category: 'Memory Recall'
+    text: 'I can accurately identify my emotions as they occur in different situations.',
+    category: 'Emotional Awareness'
   },
   {
-    id: 'spatial_visualization',
+    id: 'empathy',
+    type: 'OPEN_ENDED',
+    text: 'Describe how you would respond to a colleague who seems upset but hasn\'t shared why.',
+    category: 'Empathy'
+  },
+
+  // Personality Factors
+  {
+    id: 'resilience',
+    type: 'LIKERT_SCALE',
+    text: 'Setbacks typically motivate me to try different approaches rather than discourage me.',
+    category: 'Resilience'
+  },
+  {
+    id: 'risk_tolerance',
     type: 'MULTIPLE_CHOICE',
-    text: 'When assembling furniture without instructions, I usually:',
-    category: 'Spatial Visualization',
+    text: 'When facing uncertain outcomes, I tend to:',
+    category: 'Risk Tolerance',
     options: [
-      { id: 'sv1', text: 'Can visualize how pieces fit together easily', value: 'visualize' },
-      { id: 'sv2', text: 'Need to physically try different combinations', value: 'physical' },
-      { id: 'sv3', text: 'Prefer to look for similar examples first', value: 'reference' },
-      { id: 'sv4', text: 'Find it challenging without clear steps', value: 'structured' }
+      { id: 'rt1', text: 'Calculate probabilities carefully', value: 'calculated' },
+      { id: 'rt2', text: 'Follow my intuition', value: 'intuitive' },
+      { id: 'rt3', text: 'Seek expert advice', value: 'collaborative' },
+      { id: 'rt4', text: 'Avoid unnecessary risks', value: 'cautious' }
     ]
   },
+
+  // Social Cognition
   {
-    id: 'verbal_comprehension',
-    type: 'LIKERT_SCALE',
-    text: 'I can easily explain complex concepts to others in simple terms.',
-    category: 'Verbal Comprehension'
+    id: 'social_awareness',
+    type: 'OPEN_ENDED',
+    text: 'Describe a situation where understanding someone else perspective changed your approach to a problem.',
+    category: 'Social Awareness'
   },
   {
-    id: 'learning_style',
+    id: 'conflict_resolution',
     type: 'MULTIPLE_CHOICE',
-    text: 'When learning something new, I prefer:',
-    category: 'Learning Style',
+    text: 'In team disagreements, I most often:',
+    category: 'Conflict Resolution',
     options: [
-      { id: 'ls1', text: 'Visual diagrams and charts', value: 'visual' },
-      { id: 'ls2', text: 'Written explanations', value: 'verbal' },
-      { id: 'ls3', text: 'Hands-on practice', value: 'kinesthetic' },
-      { id: 'ls4', text: 'Logical step-by-step instructions', value: 'logical' }
+      { id: 'cr1', text: 'Facilitate compromise', value: 'mediator' },
+      { id: 'cr2', text: 'Advocate for optimal solution', value: 'optimizer' },
+      { id: 'cr3', text: 'Ensure all voices are heard', value: 'inclusive' },
+      { id: 'cr4', text: 'Focus on shared goals', value: 'unifier' }
     ]
   },
+
+  // Executive Functioning
   {
-    id: 'pattern_recognition',
+    id: 'task_prioritization',
     type: 'LIKERT_SCALE',
-    text: 'I quickly notice patterns in information or data presented to me.',
-    category: 'Pattern Recognition'
+    text: 'I consistently adjust my priorities effectively when dealing with multiple deadlines.',
+    category: 'Task Prioritization'
   },
   {
-    id: 'abstract_reasoning',
+    id: 'impulse_control',
+    type: 'OPEN_ENDED',
+    text: 'Describe a recent situation where you had to delay immediate gratification for a long-term goal.',
+    category: 'Impulse Control'
+  },
+
+  // Creativity & Innovation
+  {
+    id: 'divergent_thinking',
     type: 'LIKERT_SCALE',
-    text: 'I enjoy thinking about theoretical concepts and abstract ideas.',
-    category: 'Abstract Reasoning'
+    text: 'I frequently generate multiple solutions to a single problem.',
+    category: 'Divergent Thinking'
   },
   {
-    id: 'collaboration',
+    id: 'innovation_response',
     type: 'MULTIPLE_CHOICE',
-    text: 'In group projects, I typically:',
-    category: 'Collaboration',
+    text: 'When encountering established processes, I typically:',
+    category: 'Innovation Response',
     options: [
-      { id: 'c1', text: 'Take the lead naturally', value: 'leader' },
-      { id: 'c2', text: 'Contribute ideas but prefer others to lead', value: 'contributor' },
-      { id: 'c3', text: 'Focus on specific tasks assigned', value: 'specialist' },
-      { id: 'c4', text: 'Adapt to whatever role is needed', value: 'flexible' }
+      { id: 'ir1', text: 'Look for improvement opportunities', value: 'optimizer' },
+      { id: 'ir2', text: 'Master existing systems first', value: 'systemic' },
+      { id: 'ir3', text: 'Combine different approaches', value: 'integrative' },
+      { id: 'ir4', text: 'Challenge fundamental assumptions', value: 'disruptive' }
     ]
-  },
-  {
-    id: 'time_management',
-    type: 'LIKERT_SCALE',
-    text: 'I consistently complete tasks ahead of deadlines without rushing.',
-    category: 'Time Management'
-  },
-  {
-    id: 'decision_making',
-    type: 'MULTIPLE_CHOICE',
-    text: 'When making important decisions, I usually:',
-    category: 'Decision Making',
-    options: [
-      { id: 'dm1', text: 'Analyze all available data', value: 'analytical' },
-      { id: 'dm2', text: 'Trust my intuition', value: 'intuitive' },
-      { id: 'dm3', text: 'Consider others opinions', value: 'collaborative' },
-      { id: 'dm4', text: 'Follow established procedures', value: 'structured' }
-    ]
-  },
-  {
-    id: 'stress_management',
-    type: 'LIKERT_SCALE',
-    text: 'I maintain focus and productivity even under pressure.',
-    category: 'Stress Management'
-  },
-  {
-    id: 'innovation',
-    type: 'LIKERT_SCALE',
-    text: 'I often suggest new approaches to improve existing processes.',
-    category: 'Innovation'
-  },
-  {
-    id: 'adaptability',
-    type: 'LIKERT_SCALE',
-    text: 'I adjust quickly to unexpected changes in plans or situations.',
-    category: 'Adaptability'
   }
 ];
 
@@ -176,9 +169,9 @@ export default function AssessmentInterface({ assessment }: { assessment: any })
         </motion.div>
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Cognitive Assessment
+            Comprehensive Psychological Assessment
           </h1>
-          <p className="text-gray-600">Understanding Your Cognitive Profile</p>
+          <p className="text-gray-600">Evaluating Cognitive, Emotional, and Behavioral Patterns</p>
         </div>
       </div>
 
@@ -242,6 +235,14 @@ export default function AssessmentInterface({ assessment }: { assessment: any })
                     </label>
                   ))}
                 </div>
+              )}
+
+              {currentQuestionData.type === 'OPEN_ENDED' && (
+                <Textarea
+                  {...register(currentQuestionData.id)}
+                  className="min-h-[120px] border-2 border-gray-100 focus:border-blue-200"
+                  placeholder="Type your response here..."
+                />
               )}
             </div>
           </CardContent>

@@ -26,6 +26,7 @@ export default async function TakeAssessmentPage({
       }
     }
   })
+  console.log(assessment)
 
   if (!assessment) {
     redirect('/student/assignments')
