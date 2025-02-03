@@ -1,4 +1,6 @@
-const { PrismaClient, UserRole, AssessmentType, AssessmentStatus, QuestionType, SchoolReportType } = require('@prisma/client');
+
+
+const { PrismaClient, UserRole,CompletionStatus, AssessmentType, AssessmentStatus, QuestionType, SchoolReportType } = require('@prisma/client');
 const { hash } = require('bcrypt');
 const { faker } = require('@faker-js/faker');
 
@@ -8,11 +10,11 @@ const prisma = new PrismaClient({
 });
 
 // Constants for data generation
-const SCHOOLS_COUNT = 5;
-const STUDENTS_PER_SCHOOL = 20;
-const PARENTS_COUNT = 50;
-const ASSESSMENTS_COUNT = 10;
-const QUESTIONS_PER_ASSESSMENT = 15;
+const SCHOOLS_COUNT = 3;
+const STUDENTS_PER_SCHOOL = 10;
+const PARENTS_COUNT = 10;
+const ASSESSMENTS_COUNT = 5;
+const QUESTIONS_PER_ASSESSMENT = 5;
 const BATCH_SIZE = 50;
 
 // Reusable options
@@ -50,9 +52,11 @@ async function clearDatabase() {
     await prisma.$transaction([
       prisma.schoolReport.deleteMany(),
       prisma.report.deleteMany(),
+      prisma.studentAssessment.deleteMany(),
       prisma.response.deleteMany(),
       prisma.question.deleteMany(),
       prisma.assessment.deleteMany(),
+      prisma.payment.deleteMany(), // Add this before deleting schools
       prisma.student.deleteMany(),
       prisma.parent.deleteMany(),
       prisma.school.deleteMany(),
@@ -65,7 +69,6 @@ async function clearDatabase() {
     throw error;
   }
 }
-
 async function createSystemAdmin() {
   console.log('Creating system admin...');
   return prisma.user.create({
@@ -187,6 +190,7 @@ async function createAssessments() {
           type: assessmentType.type,
           status: AssessmentStatus.PUBLISHED,
           gradeLevel: generateGradeLevels(),
+          duration: Math.floor(Math.random() * 60) + 30,
           questions: {
             create: Array.from({ length: QUESTIONS_PER_ASSESSMENT }, (_, qIndex) => ({
               text: faker.lorem.sentence() + '?',
@@ -206,7 +210,26 @@ async function createAssessments() {
   }
   return assessments;
 }
-
+async function createStudentAssessments(students, assessments) {
+  try {
+    for (const student of students) {
+      for (const assessment of assessments) {
+        await prisma.studentAssessment.create({
+          data: {
+            studentId: student.student.id,
+            assessmentId: assessment.id,
+            status: CompletionStatus.PENDING,
+            startedAt: null,
+            completedAt: null
+          }
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error creating StudentAssessments:', error);
+    throw error;
+  }
+}
 async function createResponseBatch(student, assessment) {
   try {
     const responses = assessment.questions.map(question => ({
@@ -325,7 +348,9 @@ async function main() {
       }
       console.log(`Created responses for student ${student.student.id}`);
     }
-
+// In the main() function, after creating responses
+// Create StudentAssessment entries
+await createStudentAssessments(students, assessments);
     // Create reports
     console.log('Creating reports...');
     await createReports(students, schools);

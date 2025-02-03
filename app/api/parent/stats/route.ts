@@ -1,4 +1,3 @@
-// app/api/parent/stats/route.ts
 import { PrismaClient } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
@@ -81,29 +80,31 @@ export async function GET(req: NextRequest) {
             name: true
           }
         },
-        assessments: {
+        studentAssessments: {
           where: {
-            status: 'PUBLISHED'
+            assessment: {
+              status: 'PUBLISHED'
+            }
           },
           select: {
-            id: true,
-            title: true,
-            questions: {
+            assessment: {
               select: {
-                id: true
+                id: true,
+                title: true,
+                questions: {
+                  select: {
+                    id: true
+                  }
+                }
               }
-            }
+            },
+            status: true
           }
         },
         responses: {
           select: {
             assessmentId: true,
-            questionId: true,
-            assessment: {
-              select: {
-                status: true
-              }
-            }
+            questionId: true
           }
         },
         reports: {
@@ -127,26 +128,22 @@ export async function GET(req: NextRequest) {
       },
       stats: {
         totalChildren: children.length,
-        totalAssessments: children.reduce((sum, child) => sum + child.assessments.length, 0),
+        totalAssessments: children.reduce((sum, child) => 
+          sum + child.studentAssessments.length, 0),
         completedAssessments: children.reduce((sum, child) => {
-          return sum + child.assessments.filter(assessment => {
-            const totalQuestions = assessment.questions.length
-            const answeredQuestions = new Set(
-              child.responses
-                .filter(r => r.assessmentId === assessment.id && r.assessment.status === 'PUBLISHED')
-                .map(r => r.questionId)
-            ).size
-            return totalQuestions > 0 && answeredQuestions === totalQuestions
-          }).length
+          return sum + child.studentAssessments.filter(sa => 
+            sa.status === 'COMPLETED'
+          ).length
         }, 0),
         schoolsCount: new Set(children.map(child => child.school?.name).filter(Boolean)).size
       },
       children: children.map(child => {
-        const assessmentProgress: AssessmentProgress[] = child.assessments.map(assessment => {
+        const assessmentProgress: AssessmentProgress[] = child.studentAssessments.map(sa => {
+          const assessment = sa.assessment
           const totalQuestions = assessment.questions.length
           const answeredQuestions = new Set(
             child.responses
-              .filter(r => r.assessmentId === assessment.id && r.assessment.status === 'PUBLISHED')
+              .filter(r => r.assessmentId === assessment.id)
               .map(r => r.questionId)
           ).size
 
@@ -170,9 +167,9 @@ export async function GET(req: NextRequest) {
           grade: child.grade,
           school: child.school?.name ?? null,
           stats: {
-            totalAssessments: child.assessments.length,
+            totalAssessments: child.studentAssessments.length,
             completedAssessments,
-            pendingAssessments: child.assessments.length - completedAssessments,
+            pendingAssessments: child.studentAssessments.length - completedAssessments,
             assessmentProgress
           },
           latestReport: child.reports[0] ?? null

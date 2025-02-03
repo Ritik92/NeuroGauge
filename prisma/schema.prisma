@@ -46,6 +46,7 @@ model Student {
   schoolId        String?
   parents         Parent[]
   assessments     Assessment[]
+  studentAssessments StudentAssessment[]
   responses       Response[]
   reports         Report[]
   createdAt       DateTime  @default(now())
@@ -116,13 +117,42 @@ model Assessment {
   gradeLevel  Int[] 
   type        AssessmentType
   status      AssessmentStatus @default(DRAFT)
+  duration    Int?      // Duration in minutes
   
   // Relations
   questions   Question[]
   students    Student[]
   responses   Response[]
+  studentAssessments StudentAssessment[] // New relation
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+// New model to track student-assessment relationship and status
+model StudentAssessment {
+  id            String    @id @default(cuid())
+  status        CompletionStatus @default(PENDING)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  
+  // Relations
+  student       Student    @relation(fields: [studentId], references: [id])
+  studentId     String
+  assessment    Assessment @relation(fields: [assessmentId], references: [id])
+  assessmentId  String
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([studentId, assessmentId])
+}
+
+// New enum for assignment completion status
+enum CompletionStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  EXPIRED
 }
 
 enum AssessmentType {

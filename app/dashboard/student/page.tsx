@@ -3,10 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  CheckSquare, School, UserSquare2, Brain
+  CheckSquare, School, UserSquare2, Brain, 
+  Clock, Play, CheckCircle2, AlertTriangle
 } from 'lucide-react';
 
-const StatCard = ({ title, value, icon: Icon }) => {
+const StatCard = ({ title, value, icon: Icon, className = '' }) => {
   return (
     <motion.div
       whileHover={{ y: -5 }}
@@ -16,7 +17,7 @@ const StatCard = ({ title, value, icon: Icon }) => {
       <Card>
         <CardContent className="flex items-center p-6">
           <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
-            <Icon className="h-6 w-6 text-blue-600" />
+            <Icon className={`h-6 w-6 ${className}`} />
           </div>
           <div className="ml-4">
             <p className="text-sm font-medium text-gray-600">{title}</p>
@@ -81,14 +82,76 @@ const Dashboard = () => {
         <p className="text-gray-600">Grade {stats.student.grade}</p>
       </motion.div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Assessment Stats Grid */}
+      <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Assessments"
-          value={stats.stats.completedAssessments}
+          value={stats.assessmentStats.total}
           icon={CheckSquare}
+          className="text-blue-600"
+        />
+        <StatCard
+          title="Pending"
+          value={stats.assessmentStats.pending}
+          icon={Clock}
+          className="text-yellow-600"
+        />
+        <StatCard
+          title="In Progress"
+          value={stats.assessmentStats.inProgress}
+          icon={Play}
+          className="text-orange-600"
+        />
+        <StatCard
+          title="Completed"
+          value={stats.assessmentStats.completed}
+          icon={CheckCircle2}
+          className="text-green-600"
         />
       </div>
+
+      {/* Assessments Details */}
+      {stats.assessmentDetails && stats.assessmentDetails.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center text-xl">
+                <Brain className="mr-2 h-5 w-5 text-blue-600" />
+                Assessment Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {stats.assessmentDetails.map((assessment, index) => (
+                <div 
+                  key={index} 
+                  className={`py-3 ${index !== stats.assessmentDetails.length - 1 ? 'border-b' : ''}`}
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold text-gray-900">{assessment.title}</p>
+                      <p className="text-sm text-gray-600">{assessment.type}</p>
+                    </div>
+                    <div className={`
+                      px-2 py-1 rounded-full text-xs font-medium
+                      ${assessment.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 
+                        assessment.status === 'IN_PROGRESS' ? 'bg-orange-100 text-orange-800' : 
+                        assessment.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 
+                        'bg-red-100 text-red-800'
+                      }
+                    `}>
+                      {assessment.status}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Info Cards */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

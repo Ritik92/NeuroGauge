@@ -3,8 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, BookOpen, CheckSquare, School, GraduationCap, User } from 'lucide-react';
 
-
-
 const StatCard = ({ title, value, icon: Icon }) => {
   return (
     <Card>
@@ -38,7 +36,7 @@ const ChildCard = ({ child }) => {
           </div>
           <div>
             <p className="text-sm text-gray-600">School</p>
-            <p className="font-medium">{child.school}</p>
+            <p className="font-medium">{child.school ?? 'Not assigned'}</p>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
@@ -88,8 +86,6 @@ const ParentDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* <Navbar /> */}
-      
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900">

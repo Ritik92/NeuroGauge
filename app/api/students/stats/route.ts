@@ -1,5 +1,4 @@
-// app/api/student/stats/route.ts
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, CompletionStatus } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 
@@ -25,16 +24,36 @@ export async function GET(req: NextRequest) {
     // Get student-specific stats
     const [
       totalAssessments,
-      completedAssessments,
+      studentAssessments,
       latestReport,
       schoolInfo,
       parentInfo
     ] = await Promise.all([
       prisma.assessment.count({
-        where: { students: { some: { id: user.student.id } } }
+        where: { 
+          students: { some: { id: user.student.id } },
+          status: 'PUBLISHED',
+          gradeLevel: { hasSome: [user.student.grade] } // Match student's grade
+        }
       }),
-      prisma.response.count({
-        where: { studentId: user.student.id }
+      prisma.studentAssessment.findMany({
+        where: { 
+          studentId: user.student.id,
+          assessment: {
+            status: 'PUBLISHED',
+            gradeLevel: { hasSome: [user.student.grade] } // Match student's grade
+          }
+        },
+        include: { 
+          assessment: {
+            select: { 
+              title: true, 
+              type: true,
+              description: true,
+              gradeLevel: true
+            } 
+          }
+        }
       }),
       prisma.report.findFirst({
         where: { studentId: user.student.id },
@@ -50,21 +69,38 @@ export async function GET(req: NextRequest) {
       })
     ])
 
+    // Calculate assessment statuses
+    const assessmentStats = {
+      total: totalAssessments,
+      pending: studentAssessments.filter(sa => sa.status === 'PENDING').length,
+      inProgress: studentAssessments.filter(sa => sa.status === 'IN_PROGRESS').length,
+      completed: studentAssessments.filter(sa => sa.status === 'COMPLETED').length,
+      expired: studentAssessments.filter(sa => sa.status === 'EXPIRED').length
+    }
+
+    // Prepare detailed assessment information
+    const assessmentDetails = studentAssessments.map(sa => ({
+      title: sa.assessment.title,
+      type: sa.assessment.type,
+      description: sa.assessment.description,
+      status: sa.status,
+      startedAt: sa.startedAt,
+      completedAt: sa.completedAt
+    }))
+
     return NextResponse.json({
       student: {
         name: `${user.student.firstName} ${user.student.lastName}`,
         grade: user.student.grade,
       },
-      stats: {
-        totalAssessments,
-        completedAssessments,
-        pendingAssessments: totalAssessments - completedAssessments
-      },
+      assessmentStats,
+      assessmentDetails,
       latestReport,
       schoolInfo,
       parentInfo
     })
   } catch (error) {
+    console.error('Error fetching student stats:', error)
     return NextResponse.json(
       { error: 'Failed to fetch student stats' },
       { status: 500 }
