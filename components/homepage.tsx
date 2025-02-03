@@ -75,112 +75,80 @@ const LandingPage = () => {
   return (
     <div ref={targetRef} className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-blue-50">
       {/* Navigation */}
-      <motion.nav
-        className={`fixed w-full z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-white/80 backdrop-blur-lg shadow-lg' : 'bg-transparent'
-        }`}
-        style={{ y }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 md:h-20">
-            <div className="flex items-center space-x-2">
-              <motion.div 
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="relative h-8 w-8"
-              >
-                <Brain className="absolute h-8 w-8 text-blue-600" />
-                <Brain className="absolute h-8 w-8 text-blue-600 opacity-50" />
-              </motion.div>
-              <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                NeuroGauge
-              </span>
-            </div>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex space-x-8">
-              {['Features', 'About', 'Testimonials', 'Contact'].map((item) => (
-                <motion.a
-                  key={item}
-                  whileHover={{ scale: 1.05 }}
-                  className="text-gray-600 hover:text-blue-600 transition-colors relative group"
-                  href={`#${item.toLowerCase()}`}
-                >
-                  {item}
-                  <motion.div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300" />
-                </motion.a>
-              ))}
-            </div>
-
-            {/* Mobile Menu Button */}
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="md:hidden p-2"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
-            </motion.button>
-
-            {/* Desktop CTA Buttons */}
-            <div className="hidden md:flex space-x-4">
-              <Link href="/auth/signin">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  className="px-6 py-2 rounded-full text-blue-600 border border-blue-600 hover:bg-blue-50 transition-colors"
-                >
-                  Login
-                </motion.button>
-              </Link>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                className="px-6 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 transition-opacity"
-              >
-                Register School
-              </motion.button>
-            </div>
-          </div>
+      <nav className={`fixed w-full z-50 transition-all duration-300 ${
+  isScrolled ? 'bg-white/80 backdrop-blur-lg shadow-lg' : 'bg-transparent'
+}`}>
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="flex items-center justify-between h-16 md:h-20">
+      <div className="flex items-center space-x-2">
+        <div className="relative">
+          <Brain className="w-8 h-8 text-blue-600" />
         </div>
+        <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          NeuroGauge
+        </span>
+      </div>
 
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-white border-t"
-            >
-              <div className="px-4 py-4 space-y-4">
-                {['Features', 'About', 'Testimonials', 'Contact'].map((item) => (
-                  <motion.a
-                    key={item}
-                    whileHover={{ x: 10 }}
-                    className="block text-gray-600 hover:text-blue-600 transition-colors"
-                    href={`#${item.toLowerCase()}`}
-                  >
-                    {item}
-                  </motion.a>
-                ))}
-                <div className="space-y-2">
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    className="w-full px-6 py-2 rounded-full text-blue-600 border border-blue-600 hover:bg-blue-50 transition-colors"
-                  >
-                    Login
-                  </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    className="w-full px-6 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 transition-opacity"
-                  >
-                    Register School
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.nav>
+      {/* Desktop Navigation */}
+      <div className="hidden md:flex space-x-8">
+        {['Features', 'About', 'Testimonials', 'Contact'].map((item) => (
+          <a
+            key={item}
+            className="text-gray-600 hover:text-blue-600 transition-colors"
+            href={`#${item.toLowerCase()}`}
+          >
+            {item}
+          </a>
+        ))}
+      </div>
+
+      {/* Mobile Menu Button */}
+      <button
+        className="md:hidden p-2"
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+      >
+        {isMenuOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
+      </button>
+
+      {/* Desktop CTA Buttons */}
+      <div className="hidden md:flex space-x-4">
+        <Link href="/auth/signin">
+          <button className="px-6 py-2 rounded-full text-blue-600 border border-blue-600 hover:bg-blue-50 transition-colors">
+            Login
+          </button>
+        </Link>
+        <button className="px-6 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 transition-opacity">
+          Register School
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {/* Mobile Menu */}
+  {isMenuOpen && (
+    <div className="md:hidden bg-white border-t">
+      <div className="px-4 py-4 space-y-4">
+        {['Features', 'About', 'Testimonials', 'Contact'].map((item) => (
+          <a
+            key={item}
+            className="block text-gray-600 hover:text-blue-600 transition-colors"
+            href={`#${item.toLowerCase()}`}
+          >
+            {item}
+          </a>
+        ))}
+        <div className="space-y-2">
+          <button className="w-full px-6 py-2 rounded-full text-blue-600 border border-blue-600 hover:bg-blue-50 transition-colors">
+            Login
+          </button>
+          <button className="w-full px-6 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 transition-opacity">
+            Register School
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
+</nav>
 
       {/* Hero Section */}
       <section className="pt-24 md:pt-32 pb-12 md:pb-20 px-4 sm:px-6 lg:px-8">
