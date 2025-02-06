@@ -1,4 +1,3 @@
-// ReportInterface.tsx (updated career sections)
 'use client'
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -7,41 +6,40 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Brain, Target, Book, Users, Star, TrendingUp, MessageCircle, HeartPulse, Briefcase, GraduationCap, Microscope, Palette, Rocket, Code2 } from 'lucide-react';
 
 const careerIconMap = {
-  STEM: <Microscope className="w-6 h-6 text-purple-600" />,
-  Arts: <Palette className="w-6 h-6 text-red-600" />,
-  Business: <Briefcase className="w-6 h-6 text-blue-600" />,
-  Technology: <Code2 className="w-6 h-6 text-green-600" />,
-  Education: <GraduationCap className="w-6 h-6 text-yellow-600" />,
-  Engineering: <Rocket className="w-6 h-6 text-orange-600" />
+  STEM: <Microscope className="w-5 h-5 text-purple-600" />,
+  Arts: <Palette className="w-5 h-5 text-red-600" />,
+  Business: <Briefcase className="w-5 h-5 text-blue-600" />,
+  Technology: <Code2 className="w-5 h-5 text-green-600" />,
+  Education: <GraduationCap className="w-5 h-5 text-yellow-600" />,
+  Engineering: <Rocket className="w-5 h-5 text-orange-600" />
 };
 
-// Add this new component section
-const CareerRecommendations = ({ bestCareer, suggestedCareers }:any) => (
-  <>
+const CareerRecommendations = ({ bestCareer, suggestedCareers }) => (
+  <div className="space-y-6">
     {/* Best Career Card */}
-    <Card className="border-2 border-emerald-100 bg-white">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-          <Rocket className="w-6 h-6 text-emerald-600" />
-          <span>Top Career Match</span>
+    <Card className="border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Rocket className="w-5 h-5 text-emerald-600" />
+          Top Career Match
         </CardTitle>
       </CardHeader>
       <CardContent>
         <motion.div 
-          className="p-6 bg-gradient-to-r from-emerald-50 to-green-50 rounded-lg"
+          className="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-lg"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-emerald-100 rounded-lg">
-              {careerIconMap[bestCareer?.field] || <Briefcase className="w-6 h-6" />}
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-white rounded-lg shadow-sm">
+              {careerIconMap[bestCareer?.field] || <Briefcase className="w-5 h-5" />}
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-bold text-emerald-800">{bestCareer?.title}</h3>
-              <Badge variant="outline" className="bg-emerald-100 text-emerald-700">
-                {bestCareer?.field} Field
+              <h3 className="text-lg font-semibold text-emerald-800">{bestCareer?.title}</h3>
+              <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 font-medium">
+                {bestCareer?.field}
               </Badge>
-              <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+              <p className="text-sm text-gray-600 leading-relaxed">
                 {bestCareer.reason}
               </p>
             </div>
@@ -51,11 +49,11 @@ const CareerRecommendations = ({ bestCareer, suggestedCareers }:any) => (
     </Card>
 
     {/* Suggested Careers */}
-    <Card className="border-2 border-purple-100 bg-white">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-          <GraduationCap className="w-6 h-6 text-purple-600" />
-          <span>Recommended Career Paths</span>
+    <Card className="border border-purple-200 shadow-sm hover:shadow-md transition-shadow">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <GraduationCap className="w-5 h-5 text-purple-600" />
+          Alternative Career Paths
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -66,18 +64,18 @@ const CareerRecommendations = ({ bestCareer, suggestedCareers }:any) => (
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.1 }}
-              className="p-4 bg-white border-2 border-purple-100 rounded-lg hover:border-purple-300 transition-colors"
+              className="p-4 bg-white border border-purple-100 rounded-lg hover:border-purple-300 hover:shadow-sm transition-all"
             >
-              <div className="flex items-start gap-4">
-                <div className="p-2.5 bg-purple-100 rounded-lg shrink-0">
-                  {careerIconMap[career.field] || <Briefcase className="w-6 h-6" />}
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-purple-50 rounded-lg">
+                  {careerIconMap[career.field] || <Briefcase className="w-5 h-5" />}
                 </div>
                 <div className="space-y-2">
-                  <h4 className="font-semibold text-purple-800">{career.title}</h4>
-                  <Badge variant="outline" className="bg-purple-100 text-purple-700">
+                  <h4 className="font-medium text-purple-900">{career.title}</h4>
+                  <Badge variant="secondary" className="bg-purple-50 text-purple-700">
                     {career.field}
                   </Badge>
-                  <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+                  <p className="text-sm text-gray-600 leading-relaxed">
                     {career.reason}
                   </p>
                 </div>
@@ -87,13 +85,14 @@ const CareerRecommendations = ({ bestCareer, suggestedCareers }:any) => (
         </div>
       </CardContent>
     </Card>
-  </>
+  </div>
 );
+
 const iconMap = {
-  Book: <Book className="w-6 h-6" />,
-  Brain: <Brain className="w-6 h-6" />,
-  Users: <Users className="w-6 h-6" />,
-  Target: <Target className="w-6 h-6" />
+  Book: <Book className="w-5 h-5" />,
+  Brain: <Brain className="w-5 h-5" />,
+  Users: <Users className="w-5 h-5" />,
+  Target: <Target className="w-5 h-5" />
 };
 
 const ReportInterface = ({ demoData }) => {
@@ -104,16 +103,11 @@ const ReportInterface = ({ demoData }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: shouldReduceMotion ? 0 : 0.5 }}
-      className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8"
+      className="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8"
     >
-        <CareerRecommendations
-        bestCareer={demoData.bestCareer} 
-        suggestedCareers={demoData.suggestedCareers} 
-      />
-
       {/* Header Section */}
-      <header className="space-y-4">
-        <div className="flex flex-col xs:flex-row items-start xs:items-center gap-3 xs:gap-4">
+      <header className="space-y-4 text-center">
+        <div className="inline-flex items-center justify-center gap-3 mb-4">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ 
@@ -122,68 +116,67 @@ const ReportInterface = ({ demoData }) => {
               ease: "linear" 
             }}
           >
-            <Brain className="w-8 h-8 text-blue-600 shrink-0" />
+            <Brain className="w-8 h-8 text-blue-600" />
           </motion.div>
-          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent leading-tight">
-            Cognitive Assessment Report
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+            Cognitive Assessment
           </h1>
         </div>
         
-        <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary" className="bg-blue-100/50 hover:bg-blue-100">
+        <div className="flex flex-wrap justify-center gap-2">
+          <Badge variant="secondary" className="bg-blue-50 text-blue-700 px-3 py-1">
             {demoData.studentInfo.name}
           </Badge>
-          <Badge variant="secondary" className="bg-blue-100/50 hover:bg-blue-100">
+          <Badge variant="secondary" className="bg-blue-50 text-blue-700 px-3 py-1">
             {demoData.studentInfo.grade}
           </Badge>
-          <Badge variant="secondary" className="bg-blue-100/50 hover:bg-blue-100">
+          <Badge variant="secondary" className="bg-blue-50 text-blue-700 px-3 py-1">
             {demoData.studentInfo.personalityType}
           </Badge>
-          <Badge variant="secondary" className="bg-blue-100/50 hover:bg-blue-100">
+          <Badge variant="secondary" className="bg-blue-50 text-blue-700 px-3 py-1">
             {new Date(demoData.studentInfo?.assessmentDate).toLocaleDateString()}
           </Badge>
         </div>
       </header>
 
+      <CareerRecommendations
+        bestCareer={demoData.bestCareer} 
+        suggestedCareers={demoData.suggestedCareers} 
+      />
+
       {/* Cognitive Profile Section */}
-      <Card className="border-2 border-blue-100 bg-white">
+      <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
         <CardHeader>
-          <CardTitle className="text-xl sm:text-2xl text-blue-600">
+          <CardTitle className="text-xl text-blue-700">
             Cognitive Profile
           </CardTitle>
-          <CardDescription className="text-sm sm:text-base">
-            Comprehensive analysis of cognitive abilities
+          <CardDescription>
+            Analysis of key cognitive abilities and traits
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-5">
           {Object.entries(demoData.cognitiveProfile).map(([key, value], index) => (
             <motion.div
               key={key}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ 
-                delay: shouldReduceMotion ? 0 : index * 0.1,
-                duration: shouldReduceMotion ? 0 : 0.5
-              }}
+              transition={{ delay: shouldReduceMotion ? 0 : index * 0.1 }}
               className="space-y-2"
             >
               <div className="flex justify-between items-center">
-                <span className="text-sm sm:text-base font-medium capitalize text-gray-700">
+                <span className="text-sm font-medium text-gray-700 capitalize">
                   {key.replace(/([A-Z])/g, ' $1').trim()}
                 </span>
-                {/* <span className="text-sm sm:text-base font-bold text-blue-600">
+                <span className="text-sm font-semibold text-blue-600">
                   {value}%
-                </span> */}
+                </span>
               </div>
-              <div className="w-full h-3 bg-blue-50 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-blue-50 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${value}%` }}
-                  transition={{ 
-                    duration: shouldReduceMotion ? 0 : 1, 
-                    delay: shouldReduceMotion ? 0 : index * 0.1 
-                  }}
-                  className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
+                  transition={{ duration: shouldReduceMotion ? 0 : 1 }}
+                  className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
                 />
               </div>
             </motion.div>
@@ -193,19 +186,19 @@ const ReportInterface = ({ demoData }) => {
 
       {/* Learning Style & Strengths */}
       <div className="grid md:grid-cols-2 gap-6">
-        <Card className="border-2 border-blue-100 bg-white">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-              <Star className="w-6 h-6 text-blue-600" />
-              <span>Learning Style</span>
+        <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Star className="w-5 h-5 text-blue-600" />
+              Learning Style
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="p-4 bg-blue-50/50 rounded-lg">
-              <p className="font-semibold text-blue-600 sm:text-base">
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <p className="font-medium text-blue-700">
                 Primary: {demoData?.learningStyle?.primary}
               </p>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-blue-600 mt-1">
                 Secondary: {demoData?.learningStyle?.secondary}
               </p>
             </div>
@@ -215,14 +208,11 @@ const ReportInterface = ({ demoData }) => {
                   key={index}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ 
-                    delay: shouldReduceMotion ? 0 : index * 0.1,
-                    duration: shouldReduceMotion ? 0 : 0.5
-                  }}
+                  transition={{ delay: shouldReduceMotion ? 0 : index * 0.1 }}
                   className="flex items-start gap-3"
                 >
-                  <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 shrink-0" />
-                  <span className="text-sm sm:text-base text-gray-700 leading-relaxed">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2" />
+                  <span className="text-sm text-gray-600 leading-relaxed">
                     {char}
                   </span>
                 </motion.li>
@@ -231,31 +221,28 @@ const ReportInterface = ({ demoData }) => {
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-blue-100 bg-white">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-              <TrendingUp className="w-6 h-6 text-blue-600" />
-              <span>Key Strengths</span>
+        <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <TrendingUp className="w-5 h-5 text-blue-600" />
+              Key Strengths
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {demoData.strengths.map((strength, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ 
-                    delay: shouldReduceMotion ? 0 : index * 0.1,
-                    duration: shouldReduceMotion ? 0 : 0.5
-                  }}
-                  className="p-4 bg-blue-50/50 rounded-lg space-y-2 hover:bg-blue-50 transition-colors"
+                  transition={{ delay: shouldReduceMotion ? 0 : index * 0.1 }}
+                  className="p-4 bg-blue-50 rounded-lg space-y-2 hover:bg-blue-100/50 transition-colors"
                 >
-                  <div className="flex justify-between items-center flex-wrap gap-2">
-                    <span className="font-semibold text-blue-600 sm:text-base">
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="font-medium text-blue-700">
                       {strength.title}
                     </span>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                    <Badge className="bg-blue-100 text-blue-700">
                       {strength.score}%
                     </Badge>
                   </div>
@@ -270,11 +257,11 @@ const ReportInterface = ({ demoData }) => {
       </div>
 
       {/* Recommendations */}
-      <Card className="border-2 border-blue-100 bg-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-            <MessageCircle className="w-6 h-6 text-blue-600" />
-            <span>Personalized Recommendations</span>
+      <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <MessageCircle className="w-5 h-5 text-blue-600" />
+            Personalized Recommendations
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -284,18 +271,15 @@ const ReportInterface = ({ demoData }) => {
                 key={index}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ 
-                  delay: shouldReduceMotion ? 0 : index * 0.1,
-                  duration: shouldReduceMotion ? 0 : 0.3
-                }}
-                className="p-4 border-2 border-blue-100 rounded-lg hover:border-blue-300 bg-white transition-colors"
+                transition={{ delay: shouldReduceMotion ? 0 : index * 0.1 }}
+                className="p-4 border border-blue-100 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all"
               >
-                <div className="flex items-start gap-4">
-                  <div className="p-2.5 bg-blue-100 rounded-lg shrink-0">
-                    {iconMap[rec.icon] || <Book className="w-6 h-6" />}
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-50 rounded-lg">
+                    {iconMap[rec.icon] || <Book className="w-5 h-5" />}
                   </div>
                   <div>
-                    <h4 className="font-semibold text-blue-600 sm:text-base">
+                    <h4 className="font-medium text-blue-700">
                       {rec.title}
                     </h4>
                     <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">
@@ -310,11 +294,11 @@ const ReportInterface = ({ demoData }) => {
       </Card>
 
       {/* Development Areas */}
-      <Card className="border-2 border-blue-100 bg-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-            <HeartPulse className="w-6 h-6 text-blue-600" />
-            <span>Development Areas</span>
+      <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <HeartPulse className="w-5 h-5 text-blue-600" />
+            Development Areas
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -324,25 +308,28 @@ const ReportInterface = ({ demoData }) => {
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ 
-                  delay: shouldReduceMotion ? 0 : index * 0.1,
-                  duration: shouldReduceMotion ? 0 : 0.5
-                }}
-                className="p-4 bg-blue-50/50 rounded-lg hover:bg-blue-50 transition-colors"
+                transition={{ delay: shouldReduceMotion ? 0 : index * 0.1 }}
+                className="p-4 bg-blue-50 rounded-lg hover:bg-blue-100/50 transition-colors text-center"
               >
-                <h4 className="font-semibold text-blue-600 sm:text-base text-center">
+                <h4 className="font-medium text-blue-700">
                   {area}
                 </h4>
-                <p className="text-sm text-gray-600 mt-2 text-center leading-relaxed">
+                <p className="text-sm text-gray-600 mt-2">
                   Focused improvement strategies available
                 </p>
               </motion.div>
             ))}
           </div>
         </CardContent>
-      </Card>
-    </motion.div>
-  );
+        </Card>
+
+{/* Footer Section - Optional stats summary */}
+<div className="mt-8 text-center text-sm text-gray-500">
+  <p>Assessment completed on {new Date(demoData.studentInfo?.assessmentDate).toLocaleDateString()}</p>
+  <p className="mt-1">This report is generated based on comprehensive cognitive evaluation data</p>
+</div>
+</motion.div>
+);
 };
 
 export default ReportInterface;
