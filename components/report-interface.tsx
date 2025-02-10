@@ -1,9 +1,11 @@
 'use client'
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Brain, Target, Book, Users, Star, TrendingUp, MessageCircle, HeartPulse, Briefcase, GraduationCap, Microscope, Palette, Rocket, Code2 } from 'lucide-react';
+import { getStudentDetail } from '@/lib/actions/getstudentdetail';
+import { useSession } from 'next-auth/react';
 
 const careerIconMap = {
   STEM: <Microscope className="w-5 h-5 text-purple-600" />,
@@ -95,15 +97,15 @@ const iconMap = {
   Target: <Target className="w-5 h-5" />
 };
 
-const ReportInterface = ({ demoData }) => {
+const ReportInterface =  ({ demoData ,student}) => {
   const shouldReduceMotion = useReducedMotion();
-
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: shouldReduceMotion ? 0 : 0.5 }}
-      className="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8"
+      className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8"
     >
       {/* Header Section */}
       <header className="space-y-4 text-center">
@@ -125,10 +127,10 @@ const ReportInterface = ({ demoData }) => {
         
         <div className="flex flex-wrap justify-center gap-2">
           <Badge variant="secondary" className="bg-blue-50 text-blue-700 px-3 py-1">
-            {demoData.studentInfo.name}
+            {student?.firstName}
           </Badge>
           <Badge variant="secondary" className="bg-blue-50 text-blue-700 px-3 py-1">
-            {demoData.studentInfo.grade}
+           Grade  {student?.grade}
           </Badge>
           <Badge variant="secondary" className="bg-blue-50 text-blue-700 px-3 py-1">
             {demoData.studentInfo.personalityType}
