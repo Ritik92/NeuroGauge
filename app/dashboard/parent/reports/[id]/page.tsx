@@ -1,8 +1,13 @@
-// app/dashboard/parent/reports/[id]/page.tsx
+'use client'
 import ReportInterface from "@/components/report-interface";
 import { getParentReport } from "@/lib/actions/report";
 
 import { notFound } from "next/navigation";
+
+import { getStudentDetail } from "@/lib/actions/getstudentdetail";
+import { getStudentReport } from "@/lib/actions/report";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 interface PageProps {
   params: { id: string };
@@ -10,6 +15,21 @@ interface PageProps {
 }
 
 export default async function ParentReportPage({ params }: any) {
+  const { data: session } = useSession();
+    const userId = session?.user?.id;
+    const [student, setStudent] = useState<any>(null);
+    useEffect(() => {
+      const fetchData = async () => {
+          if (userId) {
+              const studentData = await getStudentDetail(userId);
+             
+              setStudent(studentData.student);
+              
+          }
+      };
+      
+      fetchData();
+  }, [userId, params.id]);
   try {
     const report = await getParentReport(params.id);
     if (!report) return notFound();
@@ -95,7 +115,7 @@ const data={
 }
     return (
       <div className="container py-12">
-        <ReportInterface  demoData={data}/> 
+        <ReportInterface  demoData={data} student={student}/> 
       </div>
     );
   } catch (error) {
