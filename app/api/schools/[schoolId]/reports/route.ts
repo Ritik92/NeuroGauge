@@ -5,7 +5,7 @@ const prisma = new PrismaClient()
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { schoolId: string } }
+  { params }: { params: any }
 ) {
   try {
     const school = await prisma.school.findUnique({
@@ -109,6 +109,7 @@ function calculateLearningStyles(reports) {
 
   return Object.entries(styles).map(([name, value]) => ({
     name,
+    //@ts-ignore
     value: (value / reports.length) * 100
   }))
 }
@@ -122,6 +123,7 @@ function calculateCareerDistribution(reports) {
 
   return Object.entries(careers).map(([name, value]) => ({
     name,
+    //@ts-ignore
     value: (value / reports.length) * 100
   }))
 }
