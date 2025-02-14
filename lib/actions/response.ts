@@ -24,7 +24,26 @@ export async function submitAssessmentResponse(data: {
   });
 
   if (!student) throw new Error('Student not found');
-
+  // First, create or update the StudentAssessment entry
+  await prisma.studentAssessment.upsert({
+    where: {
+      studentId_assessmentId: {
+        studentId: student.id,
+        assessmentId: data.assessmentId
+      }
+    },
+    update: {
+      status: 'COMPLETED',
+      completedAt: new Date()
+    },
+    create: {
+      studentId: student.id,
+      assessmentId: data.assessmentId,
+      status: 'COMPLETED',
+      startedAt: new Date(),
+      completedAt: new Date()
+    }
+  });
   return prisma.$transaction([
     ...data.responses.map(response =>
       prisma.response.create({

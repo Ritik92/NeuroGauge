@@ -1,18 +1,25 @@
 'use client'
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+
+import React, { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
 import { 
-  Brain, School, Book, HeartPulse, Target, Trophy, 
-  GraduationCap, ChartLine, Users, Lightbulb 
-} from 'lucide-react';
+  Brain, 
+  Book, 
+  Users, 
+  Lightbulb, 
+  Briefcase, 
+  GraduationCap,
+  AlertCircle, 
+  Download,
+  ArrowUpRight
+} from 'lucide-react'
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -22,422 +29,458 @@ import {
   PolarGrid,
   PolarAngleAxis,
   Radar,
-  Legend
-} from 'recharts';
+  Legend,
+  Area,
+  AreaChart
+} from 'recharts'
+import { useParams } from 'next/navigation'
 
-// Enhanced data structure with grades 1-12
-const schoolData = {
-  info: {
-    name: "Edison Academy",
-    year: "2024-2025",
-    students: 2400,
-    faculty: 180,
-    location: "California, USA",
-    accreditation: "A+"
-  },
-  metrics: {
-    cognitive: {
-      gradeProgress: [
-        { grade: "1st", score: 92, improvement: 4.2, students: 200 },
-        { grade: "2nd", score: 90, improvement: 4.0, students: 195 },
-        { grade: "3rd", score: 88, improvement: 3.8, students: 205 },
-        { grade: "4th", score: 87, improvement: 3.7, students: 198 },
-        { grade: "5th", score: 86, improvement: 3.6, students: 202 },
-        { grade: "6th", score: 85, improvement: 3.5, students: 196 },
-        { grade: "7th", score: 84, improvement: 3.4, students: 203 },
-        { grade: "8th", score: 83, improvement: 3.3, students: 197 },
-        { grade: "9th", score: 82, improvement: 3.2, students: 201 },
-        { grade: "10th", score: 81, improvement: 3.1, students: 199 },
-        { grade: "11th", score: 80, improvement: 3.0, students: 204 },
-        { grade: "12th", score: 85, improvement: 3.5, students: 200 }
-      ],
-      learningStyles: [
-        { name: "Visual", value: 35, description: "Learn through seeing" },
-        { name: "Auditory", value: 25, description: "Learn through hearing" },
-        { name: "Kinesthetic", value: 20, description: "Learn through doing" },
-        { name: "Read/Write", value: 20, description: "Learn through text" }
-      ]
-    },
-    emotional: {
-      skills: [
-        { name: "Self-Awareness", value: 82, benchmark: 75 },
-        { name: "Social Skills", value: 76, benchmark: 70 },
-        { name: "Motivation", value: 80, benchmark: 72 },
-        { name: "Empathy", value: 77, benchmark: 71 },
-        { name: "Leadership", value: 75, benchmark: 68 },
-        { name: "Stress Management", value: 79, benchmark: 70 }
-      ]
-    },
-    academic: {
-      elementary: [
-        { name: "Reading", score: 88, trend: 4.2 },
-        { name: "Mathematics", score: 86, trend: 3.8 },
-        { name: "Science", score: 85, trend: 3.5 },
-        { name: "Social Studies", score: 87, trend: 3.9 }
-      ],
-      middle: [
-        { name: "Language Arts", score: 84, trend: 3.2 },
-        { name: "Pre-Algebra", score: 83, trend: 3.0 },
-        { name: "Life Science", score: 85, trend: 3.4 },
-        { name: "World History", score: 86, trend: 3.6 }
-      ],
-      high: [
-        { name: "Advanced Literature", score: 82, trend: 2.8 },
-        { name: "Advanced Math", score: 81, trend: 2.6 },
-        { name: "Physics", score: 80, trend: 2.5 },
-        { name: "World Languages", score: 83, trend: 3.0 }
-      ]
-    },
-    growth: [
-      { area: "Critical Analysis", current: 85, target: 100, improvement: 5 },
-      { area: "Research Methods", current: 88, target: 100, improvement: 6 },
-      { area: "Digital Literacy", current: 92, target: 100, improvement: 4 },
-      { area: "Communication", current: 90, target: 100, improvement: 5 },
-      { area: "Problem Solving", current: 87, target: 100, improvement: 7 },
-      { area: "Creativity", current: 89, target: 100, improvement: 6 }
-    ]
+// Types
+interface SchoolInfo {
+  name: string
+  totalStudents: number
+  gradeLevels: string[]
+}
+
+interface Strength {
+  title: string
+  count: number
+}
+
+interface ReportMetrics {
+  cognitiveProfile: Record<string, number>
+  learningStyles: Array<{ name: string; value: number }>
+  careerDistribution: Array<{ name: string; value: number }>
+  strengths: Strength[]
+}
+
+interface ReportData {
+  schoolInfo: SchoolInfo
+  metrics: ReportMetrics
+}
+
+interface CustomTooltipProps {
+  active?: boolean
+  payload?: Array<any>
+  label?: string
+}
+
+const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-4 rounded-xl shadow-lg border border-gray-100">
+        <p className="font-semibold text-gray-800">{label}</p>
+        {payload.map((item, index) => (
+          <p key={index} className="text-sm text-gray-600">
+            <span 
+              className="inline-block w-3 h-3 rounded-full mr-2" 
+              style={{ backgroundColor: item.color || item.fill }}
+            />
+            {item.value}%
+          </p>
+        ))}
+      </div>
+    )
   }
-};
+  return null
+}
 
-const MetricCard = ({ title, value, trend, icon: Icon, description }) => (
-  <motion.div
-    whileHover={{ scale: 1.02 }}
-    whileTap={{ scale: 0.98 }}
-    className="p-6 bg-white rounded-xl shadow-lg border border-blue-100 hover:border-blue-300 hover:shadow-xl transition-all duration-300"
-  >
-    <div className="flex items-center justify-between">
-      <div className="p-3 bg-blue-50 rounded-lg">
-        <Icon className="w-6 h-6 text-blue-600" />
-      </div>
-      <div className="text-right">
-        <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-          {value}
+const AnimatedCounter: React.FC<{ value: number; duration?: number }> = ({ 
+  value, 
+  duration = 2 
+}) => {
+  const [count, setCount] = useState(0)
+
+  useEffect(() => {
+    let startTime: number
+    let animationFrameId: number
+
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp
+      const progress = (timestamp - startTime) / (duration * 1000)
+
+      if (progress < 1) {
+        setCount(Math.min(Math.floor(value * progress), value))
+        animationFrameId = requestAnimationFrame(animate)
+      } else {
+        setCount(value)
+      }
+    }
+    
+    animationFrameId = requestAnimationFrame(animate)
+    return () => animationFrameId && cancelAnimationFrame(animationFrameId)
+  }, [value, duration])
+
+  return <span className="font-mono tabular-nums">{count.toLocaleString()}</span>
+}
+
+const DashboardCard: React.FC<{
+  title: string
+  icon: React.ComponentType<{ className?: string }>
+  children: React.ReactNode
+  description?: string
+  className?: string
+}> = ({ title, icon: Icon, children, description, className = "" }) => (
+  <Card className={`bg-white shadow-md hover:shadow-xl transition-all duration-300 rounded-xl ${className}`}>
+    <CardHeader className="space-y-2">
+      <CardTitle className="flex items-center gap-3 text-xl">
+        <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100">
+          <Icon className="w-6 h-6 text-blue-600" />
         </div>
-        {trend && (
-          <motion.span 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className={`text-sm font-medium ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}
-          >
-            {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}%
-          </motion.span>
-        )}
-      </div>
-    </div>
-    <h3 className="mt-4 text-lg font-semibold text-gray-800">{title}</h3>
-    {description && (
-      <p className="mt-2 text-sm text-gray-600">{description}</p>
-    )}
-  </motion.div>
-);
+        {title}
+      </CardTitle>
+      {description && (
+        <CardDescription className="text-gray-600">
+          {description}
+        </CardDescription>
+      )}
+    </CardHeader>
+    <CardContent>{children}</CardContent>
+  </Card>
+)
 
-export default function SchoolPsychometricDashboard() {
-  const [selectedGradeLevel, setSelectedGradeLevel] = useState('elementary');
+const LoadingState: React.FC = () => (
+  <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-gradient-to-br from-blue-50 via-white to-blue-100">
+    <motion.div
+      animate={{ rotate: 360 }}
+      transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+      className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full"
+    />
+    <p className="text-lg text-gray-600 animate-pulse">Loading dashboard data...</p>
+  </div>
+)
+
+const SchoolPsychometricDashboard: React.FC = () => {
+  const [reportData, setReportData] = useState<ReportData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [exporting, setExporting] = useState(false)
+  const params = useParams()
+  const schoolId = params?.schoolId as string
+  const dashboardRef = React.useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch(`/api/schools/${schoolId}/reports`)
+        if (!response.ok) throw new Error('Failed to fetch report data')
+        const data = await response.json()
+        setReportData(data)
+        setError(null)
+      } catch (error) {
+        setError(error instanceof Error ? error.message : 'An error occurred')
+        console.error('Error fetching reports:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [schoolId])
+
+  const downloadAsPDF = async () => {
+    if (!dashboardRef.current || !reportData) return
+    
+    try {
+      setExporting(true)
+      const element = dashboardRef.current
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        logging: false,
+        useCORS: true
+      })
+      
+      const imgWidth = 210
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+      
+      const pdf = new jsPDF({
+        orientation: imgHeight > imgWidth ? 'portrait' : 'landscape',
+        unit: 'mm'
+      })
+      
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight)
+      pdf.save(`${reportData.schoolInfo.name}-analytics-${new Date().toISOString().split('T')[0]}.pdf`)
+    } catch (err) {
+      console.error('Error generating PDF:', err)
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  if (loading) return <LoadingState />
+  if (error) return (
+    <Alert variant="destructive" className="max-w-xl mx-auto mt-8">
+      <AlertCircle className="h-4 w-4" />
+      <AlertDescription>{error}</AlertDescription>
+    </Alert>
+  )
+  if (!reportData) return (
+    <Alert className="max-w-xl mx-auto mt-8">
+      <AlertCircle className="h-4 w-4" />
+      <AlertDescription>No report data found</AlertDescription>
+    </Alert>
+  )
+
+  const chartTheme = {
+    grid: '#E5E7EB',
+    text: '#374151',
+    primary: '#2563EB',
+    secondary: '#60A5FA',
+    background: '#F8FAFC'
+  }
 
   return (
-    <div className="max-w-7xl mx-auto p-8 space-y-8 bg-gradient-to-b from-gray-50 to-white min-h-screen">
+    <div ref={dashboardRef} className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 pb-12">
       {/* Header */}
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white p-8 rounded-xl shadow-lg border border-blue-100"
-      >
-        <div className="flex items-center space-x-6 mb-6">
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {reportData.schoolInfo.name}
+              </h1>
+              <p className="mt-1 text-sm text-gray-500">
+                Analytics Dashboard
+              </p>
+            </div>
+            <button
+              onClick={downloadAsPDF}
+              disabled={exporting}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              {exporting ? (
+                <>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
+                  />
+                  Generating PDF...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Report
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <motion.div 
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            className="p-4 bg-blue-100 rounded-full"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white p-6 rounded-xl shadow-md"
           >
-            <School className="w-10 h-10 text-blue-600" />
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <Users className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Students</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  <AnimatedCounter value={reportData.schoolInfo.totalStudents} />
+                </p>
+              </div>
+            </div>
           </motion.div>
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              {schoolData.info.name}
-            </h1>
-            <p className="text-lg text-gray-600">Comprehensive Psychometric Analysis Dashboard</p>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          {Object.entries(schoolData.info).map(([key, value]) => (
-            key !== 'name' && (
-              <Badge 
-                key={key} 
-                variant="secondary" 
-                className="px-4 py-1.5 text-sm bg-blue-50 hover:bg-blue-100 transition-colors"
-              >
-                {key.charAt(0).toUpperCase() + key.slice(1)}: {value}
-              </Badge>
-            )
-          ))}
-        </div>
-      </motion.div>
 
-      {/* Grade Progress */}
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <ChartLine className="w-6 h-6 text-blue-600" />
-            <span>Academic Progress Across Grades</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={schoolData.metrics.cognitive.gradeProgress}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="grade" />
-                <YAxis domain={[60, 100]} />
-                <Tooltip 
-                  content={({ active, payload, label }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <div className="bg-white p-4 rounded-lg shadow-lg border border-blue-100">
-                          <p className="font-bold text-gray-800">{label} Grade</p>
-                          <p className="text-blue-600">Score: {payload[0].value}</p>
-                          <p className="text-green-600">Improvement: +{payload[0].payload.improvement}%</p>
-                          <p className="text-gray-600">Students: {payload[0].payload.students}</p>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="score" 
-                  stroke="#3B82F6" 
-                  strokeWidth={3}
-                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 6 }}
-                  activeDot={{ r: 8, fill: "#2563EB" }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+        
 
-      {/* Academic Performance by Grade Level */}
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <GraduationCap className="w-6 h-6 text-blue-600" />
-            <span>Academic Performance by Grade Level</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="elementary" className="w-full">
-            <TabsList className="mb-6">
-              <TabsTrigger value="elementary">Elementary</TabsTrigger>
-              <TabsTrigger value="middle">Middle School</TabsTrigger>
-              <TabsTrigger value="high">High School</TabsTrigger>
-            </TabsList>
-            <AnimatePresence mode="wait">
-              {['elementary', 'middle', 'high'].map((level) => (
-                <TabsContent key={level} value={level}>
-                  <motion.div 
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white p-6 rounded-xl shadow-md md:col-span-2 lg:col-span-1"
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-purple-50 rounded-lg">
+                <Brain className="w-6 h-6 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600">Average Performance</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {Math.round(Object.values(reportData.metrics.cognitiveProfile)
+                    .reduce((a, b) => a + b, 0) / Object.keys(reportData.metrics.cognitiveProfile).length)}%
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Cognitive Profile */}
+          <DashboardCard
+            title="Cognitive Profile Analysis"
+            icon={Brain}
+            description="Distribution of cognitive abilities across key domains"
+          >
+            <div className="h-[400px] p-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart 
+                  data={Object.entries(reportData.metrics.cognitiveProfile)
+                    .map(([name, value]) => ({ name, value }))}
+                >
+                  <PolarGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+                  <PolarAngleAxis 
+                    dataKey="name" 
+                    tick={{ fill: chartTheme.text, fontSize: 12 }}
+                  />
+                  <Radar
+                    name="Cognitive Score"
+                    dataKey="value"
+                    fill={chartTheme.primary}
+                    fillOpacity={0.3}
+                    stroke={chartTheme.primary}
+                    strokeWidth={2}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </DashboardCard>
+
+          {/* Learning Styles */}
+          <DashboardCard
+            title="Learning Style Preferences"
+            icon={Lightbulb}
+            description="Analysis of predominant learning methods"
+          >
+            <div className="h-[400px] p-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart 
+                  data={reportData.metrics.learningStyles}
+                  barSize={40}
+                >
+                  <CartesianGrid 
+                    strokeDasharray="3 3" 
+                    stroke={chartTheme.grid}
+                    vertical={false}
+                  />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fill: chartTheme.text }}
+                    axisLine={{ stroke: chartTheme.grid }}
+                  />
+                  <YAxis 
+                    unit="%" 
+                    tick={{ fill: chartTheme.text }}
+                    axisLine={{ stroke: chartTheme.grid }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar
+                    dataKey="value"
+                    fill={chartTheme.primary}
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+                </ResponsiveContainer>
+            </div>
+          </DashboardCard>
+
+          {/* Career Distribution */}
+          <DashboardCard
+            title="Career Interest Trends"
+            icon={Briefcase}
+            description="Evolution of student career preferences"
+          >
+            <div className="h-[400px] p-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={reportData.metrics.careerDistribution}>
+                  <defs>
+                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={chartTheme.primary} stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor={chartTheme.primary} stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid 
+                    strokeDasharray="3 3" 
+                    stroke={chartTheme.grid}
+                    vertical={false}
+                  />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fill: chartTheme.text }}
+                    axisLine={{ stroke: chartTheme.grid }}
+                  />
+                  <YAxis 
+                    unit="%" 
+                    tick={{ fill: chartTheme.text }}
+                    axisLine={{ stroke: chartTheme.grid }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke={chartTheme.primary}
+                    fillOpacity={1}
+                    fill="url(#colorValue)"
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </DashboardCard>
+
+          {/* Student Strengths */}
+          <DashboardCard
+            title="Notable Student Strengths"
+            icon={GraduationCap}
+            description="Most prevalent strengths in student population"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+              <AnimatePresence>
+                {reportData.metrics.strengths.map((strength, index) => (
+                  <motion.div
+                    key={strength.title}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                    transition={{ 
+                      delay: index * 0.1,
+                      duration: 0.3,
+                      ease: "easeOut"
+                    }}
+                    className="group relative p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-md transition-all"
                   >
-                    {schoolData.metrics.academic[level].map((subject) => (
-                      //@ts-ignore
-                      <MetricCard
-                        key={subject.name}
-                        title={subject.name}
-                        value={`${subject.score}%`}
-                        trend={subject.trend}
-                        icon={Book}
-                      />
-                    ))}
+                    <div className="absolute inset-0 bg-blue-600 opacity-0 group-hover:opacity-5 rounded-xl transition-opacity" />
+                    <h3 className="font-semibold text-blue-700 mb-2 group-hover:text-blue-800 transition-colors">
+                      {strength.title}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 bg-blue-200 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ 
+                            width: `${Math.round((strength.count / reportData.schoolInfo.totalStudents) * 100)}%` 
+                          }}
+                          transition={{ duration: 1, delay: index * 0.1 }}
+                          className="h-full bg-blue-600"
+                        />
+                      </div>
+                      <span className="text-sm text-blue-600 font-medium">
+                        {Math.round((strength.count / reportData.schoolInfo.totalStudents) * 100)}%
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-2">
+                      {strength.count.toLocaleString()} students
+                    </p>
                   </motion.div>
-                </TabsContent>
-              ))}
-            </AnimatePresence>
-          </Tabs>
-        </CardContent>
-      </Card>
-
-      {/* Emotional Intelligence */}
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <HeartPulse className="w-6 h-6 text-blue-600" />
-            <span>Emotional Intelligence Profile</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={schoolData.metrics.emotional.skills}>
-                <PolarGrid stroke="#e5e7eb" />
-                <PolarAngleAxis 
-                  dataKey="name" 
-                  tick={{ fill: '#4B5563', fontSize: 12 }}
-                />
-                <Radar 
-                  name="Current" 
-                  dataKey="value" 
-                  fill="#3B82F6" 
-                  fillOpacity={0.6}
-                  stroke="#2563EB"
-                  strokeWidth={2}
-                />
-                <Radar 
-                  name="Benchmark" 
-                  dataKey="benchmark" 
-                  fill="#9CA3AF" 
-                  fillOpacity={0.3}
-                  stroke="#6B7280"
-                  strokeWidth={2}
-                />
-                <Legend />
-                <Tooltip />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Growth Areas */}
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Target className="w-6 h-6 text-blue-600" />
-            <span>Growth Areas</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {schoolData.metrics.growth.map((item, index) => (
-              <motion.div
-                key={item.area}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white p-6 rounded-xl shadow border border-blue-100 hover:shadow-lg transition-all duration-300"
-              >
-                <div className="flex justify-between items-center mb-3">
-                  <span className="font-semibold text-gray-700">{item.area}</span>
-                  <Badge variant="secondary" className="bg-blue-50">
-                    +{item.improvement}% Growth
-                  </Badge>
-                </div>
-                <div className="mb-2">
-                  <span className="text-2xl font-bold text-blue-600">{item.current}%</span>
-                  <span className="text-sm text-gray-500 ml-2">of target</span>
-                </div>
-                <div className="w-full h-3 bg-blue-50 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(item.current / item.target) * 100}%` }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                    className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
-                  />
-                </div>
-                <div className="mt-2 flex justify-between text-sm">
-                  <span className="text-gray-600">Current Progress</span>
-                  <span className="text-gray-600">Target: {item.target}%</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Learning Styles Distribution */}
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Lightbulb className="w-6 h-6 text-blue-600" />
-            <span>Learning Styles Distribution</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={schoolData.metrics.cognitive.learningStyles}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip 
-                  content={({ active, payload, label }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <div className="bg-white p-4 rounded-lg shadow-lg border border-blue-100">
-                          <p className="font-bold text-gray-800">{label}</p>
-                          <p className="text-blue-600">{payload[0].value}% of students</p>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {payload[0].payload.description}
-                          </p>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Bar 
-                  dataKey="value" 
-                  fill="#3B82F6"
-                  radius={[4, 4, 0, 0]}
-                >
-                  {schoolData.metrics.cognitive.learningStyles.map((entry, index) => (
-                    <motion.rect 
-                      key={`bar-${index}`}
-                      initial={{ y: 100, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Footer */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="text-center text-gray-600 py-6"
-      >
-        <p>© {new Date().getFullYear()} {schoolData.info.name} - Psychometric Analysis Dashboard</p>
-      </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </DashboardCard>
+        </div>
+      </div>
     </div>
-  );
+  )
 }
 
-// app/schools/[schoolId]/reports/page.tsx
-// import { SchoolReports } from '@/components/school-reports';
-// import { notFound } from 'next/navigation';
-// import { PrismaClient } from '@prisma/client'
-// import { NextRequest, NextResponse } from 'next/server'
-
-// const prisma = new PrismaClient()
-
-// async function getSchool(schoolId: string) {
-//   const school = await prisma.school.findUnique({
-//     where: { id: schoolId },
-//   });
-//   return school;
-// }
-
-// export default async function SchoolReportPage({
-//   params,
-// }: {
-//   params: any;
-// }) {
-//   const school = await getSchool(params.schoolId);
-  
-//   if (!school) {
-//     notFound();
-//   }
-
-//   return (
-//     <div className="container mx-auto py-8">
-//       <h1 className="text-3xl font-bold mb-6">{school.name} Reports</h1>
-//       <SchoolReports schoolId={params.schoolId} />
-//     </div>
-//   );
-// }
+export default SchoolPsychometricDashboard
