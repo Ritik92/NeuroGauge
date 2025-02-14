@@ -30,19 +30,19 @@ const LandingPage = () => {
     {
       name: "Dr. Sarah Mitchell",
       role: "Principal, Edison High School",
-      image: "/placeholder-avatar.jpg",
+      image: "/doctor_female_2.jpg",
       quote: "NeuroGauge has transformed how we understand and support our students. The insights we've gained are invaluable.",
     },
     {
       name: "James Wilson",
       role: "School Counselor",
-      image: "/placeholder-avatar.jpg",
+      image: "/doctor_male.jpg",
       quote: "The detailed reports help us identify student strengths and areas for growth with unprecedented accuracy.",
     },
     {
       name: "Lisa Chen",
       role: "Parent",
-      image: "/placeholder-avatar.jpg",
+      image: "/doctor_female.jpg",
       quote: "Finally, we have clear insights into how our child learns best. This has been a game-changer for their education.",
     }
   ];
