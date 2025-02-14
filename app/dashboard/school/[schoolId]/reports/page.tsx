@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
+import { toast } from 'sonner'
 import { 
   Brain, 
   Book, 
@@ -34,6 +35,7 @@ import {
   AreaChart
 } from 'recharts'
 import { useParams } from 'next/navigation'
+
 
 // Types
 interface SchoolInfo {
@@ -162,6 +164,24 @@ const SchoolPsychometricDashboard: React.FC = () => {
   const params = useParams()
   const schoolId = params?.schoolId as string
   const dashboardRef = React.useRef<HTMLDivElement>(null)
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    // Mobile detection
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      if (mobile) {
+        toast.info('For best experience, please view this report on a desktop device.', {
+          duration: 6000,
+          position: 'top-center'
+        })
+      }
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -237,10 +257,15 @@ const SchoolPsychometricDashboard: React.FC = () => {
     background: '#F8FAFC',
     accent: '#818CF8'
   }
+  const truncateLabel = (label: string) => {
+    if (isMobile && label.length > 8) return `${label.substring(0, 6)}...`
+    return label
+  }
+
+  const formatPercentage = (value: number) => `${Math.round(value)}%`
 
   return (
-    <div ref={dashboardRef} className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 pb-12">
-      {/* Header */}
+    <div ref={dashboardRef} className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 pb-12">   {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -322,125 +347,152 @@ const SchoolPsychometricDashboard: React.FC = () => {
 
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Cognitive Profile */}
-          <DashboardCard
-              title="Cognitive Profile"
-              icon={Brain}
-              description="Distribution of cognitive abilities"
-            >
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart 
-                    data={Object.entries(reportData.metrics.cognitiveProfile)
-                      .map(([name, value]) => ({ name, value: Math.round(value) }))}
-                    margin={{ top: 20, right: 30, bottom: 30, left: 30 }}
-                  >
-                    <PolarGrid stroke={chartTheme.grid} />
-                    <PolarAngleAxis 
-                      dataKey="name" 
-                      tick={{ fill: chartTheme.text, fontSize: 12 }}
-                    />
-                    <Radar
-                      name="Score"
-                      dataKey="value"
-                      fill={chartTheme.primary}
-                      fillOpacity={0.3}
-                      stroke={chartTheme.primary}
-                      strokeWidth={2}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend wrapperStyle={{ paddingTop: 20 }} />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
-            </DashboardCard>
+         {/* Cognitive Profile */}
+         <DashboardCard
+            title="Cognitive Profile"
+            icon={Brain}
+            description="Distribution of cognitive abilities"
+          >
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart 
+                  data={Object.entries(reportData.metrics.cognitiveProfile)
+                    .map(([name, value]) => ({ name, value: Math.round(value) }))}
+                  margin={{ top: 20, right: 30, bottom: 30, left: 30 }}
+                >
+                  <PolarGrid stroke={chartTheme.grid} />
+                  <PolarAngleAxis 
+                    dataKey="name" 
+                    tick={{ 
+                      fill: chartTheme.text, 
+                      fontSize: isMobile ? 10 : 12,
+                      dy: isMobile ? 4 : 0
+                    }}
+                    tickFormatter={truncateLabel}
+                  />
+                  <Radar
+                    name="Score"
+                    dataKey="value"
+                    fill={chartTheme.primary}
+                    fillOpacity={0.3}
+                    stroke={chartTheme.primary}
+                    strokeWidth={2}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  {!isMobile && <Legend wrapperStyle={{ paddingTop: 20 }} />}
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </DashboardCard>
 
-            {/* Learning Styles */}
-            <DashboardCard
-              title="Learning Styles"
-              icon={Lightbulb}
-              description="Preferred learning methods"
-            >
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
-                    data={reportData.metrics.learningStyles.map(style => ({
-                      ...style,
-                      value: Math.round(style.value)
-                    }))}
-                    margin={{ top: 20, right: 30, bottom: 50, left: 30 }}
-                    barSize={32}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartTheme.grid} />
-                    <XAxis 
-                      dataKey="name" 
-                      tick={{ fill: chartTheme.text, fontSize: 12 }}
-                      axisLine={{ stroke: chartTheme.grid }}
-                      interval={0}
-                      angle={-45}
-                      textAnchor="end"
-                    />
-                    <YAxis 
-                      unit="%" 
-                      tick={{ fill: chartTheme.text, fontSize: 12 }}
-                      axisLine={{ stroke: chartTheme.grid }}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar
-                      dataKey="value"
-                      fill={chartTheme.primary}
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </DashboardCard>
+          {/* Learning Styles */}
+          <DashboardCard
+            title="Learning Styles"
+            icon={Lightbulb}
+            description="Preferred learning methods"
+          >
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+              
+<BarChart 
+  data={reportData.metrics.learningStyles.map(style => ({
+    ...style,
+    value: Math.round(style.value)
+  }))}
+  margin={{ 
+    top: 20, 
+    right: 30, 
+    bottom: isMobile ? 80 : 60, // Increased bottom margin (line 1)
+    left: 30 
+  }}
+  barSize={isMobile ? 24 : 32}
+>
+  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartTheme.grid} />
+  <XAxis 
+    dataKey="name" 
+    tick={{ 
+      fill: chartTheme.text, 
+      fontSize: isMobile ? 8 : 10,
+    }}
+    axisLine={{ stroke: chartTheme.grid }}
+    interval={0}
+    angle={isMobile ? -90 : -45} // More vertical angle for mobile (line 2)
+    textAnchor={isMobile ? 'middle' : 'end'} // Better text alignment (line 3)
+    tickFormatter={truncateLabel} // Added label truncation (line 4)
+    height={isMobile ? 80 : 60} // Explicit height allocation (line 5)
+  />
+  <YAxis 
+    tickFormatter={formatPercentage}
+    tick={{ fill: chartTheme.text, fontSize: 12 }}
+    axisLine={{ stroke: chartTheme.grid }}
+  />
+  <Tooltip content={<CustomTooltip />} />
+  <Bar
+    dataKey="value"
+    fill={chartTheme.primary}
+    radius={[4, 4, 0, 0]}
+  />
+</BarChart>
+              </ResponsiveContainer>
+            </div>
+          </DashboardCard>
 
           {/* Career Distribution */}
           <DashboardCard
-              title="Career Interests"
-              icon={Briefcase}
-              description="Student career preferences"
-              className="lg:col-span-2"
-            >
-              <div className="h-[400px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart 
-                    data={reportData.metrics.careerDistribution.map(career => ({
-                      ...career,
-                      value: Math.round(career.value)
-                    }))}
-                    margin={{ top: 20, right: 30, bottom: 30, left: 30 }}
-                  >
-                    <defs>
-                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={chartTheme.primary} stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor={chartTheme.primary} stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartTheme.grid} />
-                    <XAxis 
-                      dataKey="name" 
-                      tick={{ fill: chartTheme.text, fontSize: 12 }}
-                      axisLine={{ stroke: chartTheme.grid }}
-                    />
-                    <YAxis 
-                      unit="%" 
-                      tick={{ fill: chartTheme.text, fontSize: 12 }}
-                      axisLine={{ stroke: chartTheme.grid }}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Area
-                      type="monotone"
-                      dataKey="value"
-                      stroke={chartTheme.primary}
-                      fill="url(#colorValue)"
-                      strokeWidth={2}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </DashboardCard>
+            title="Career Interests"
+            icon={Briefcase}
+            description="Student career preferences"
+            className="lg:col-span-2"
+          >
+            <div className="h-[400px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart 
+                  data={reportData.metrics.careerDistribution.map(career => ({
+                    ...career,
+                    value: Math.round(career.value)
+                  }))}
+                  margin={{ 
+                    top: 20, 
+                    right: 30, 
+                    bottom: isMobile ? 60 : 30, 
+                    left: 30 
+                  }}
+                >
+                  <defs>
+                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={chartTheme.primary} stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor={chartTheme.primary} stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartTheme.grid} />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ 
+                      fill: chartTheme.text, 
+                      fontSize: isMobile ? 10 : 12 
+                    }}
+                    axisLine={{ stroke: chartTheme.grid }}
+                    tickFormatter={truncateLabel}
+                    interval={isMobile ? 'preserveStart' : 0}
+                  />
+                  <YAxis 
+                    tickFormatter={formatPercentage}
+                    tick={{ fill: chartTheme.text, fontSize: 12 }}
+                    axisLine={{ stroke: chartTheme.grid }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke={chartTheme.primary}
+                    fill="url(#colorValue)"
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </DashboardCard>
+
 
           {/* Student Strengths */}
           <DashboardCard
