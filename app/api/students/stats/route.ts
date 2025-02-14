@@ -31,14 +31,12 @@ export async function GET(req: NextRequest) {
     ] = await Promise.all([
       prisma.assessment.count({
         where: { 
-          students: { some: { id: user.student.id } },
           status: 'PUBLISHED',
           gradeLevel: { hasSome: [user.student.grade] } // Match student's grade
         }
       }),
       prisma.studentAssessment.findMany({
         where: { 
-          studentId: user.student.id,
           assessment: {
             status: 'PUBLISHED',
             gradeLevel: { hasSome: [user.student.grade] } // Match student's grade

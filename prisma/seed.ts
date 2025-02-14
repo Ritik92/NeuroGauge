@@ -371,144 +371,215 @@
 
 
 
-const { PrismaClient } = require('@prisma/client');
-const { QuestionType, AssessmentType, AssessmentStatus } = require('@prisma/client');
+// const { PrismaClient } = require('@prisma/client');
+// const { QuestionType, AssessmentType, AssessmentStatus } = require('@prisma/client');
 
+// const prisma = new PrismaClient();
+
+// const middleSchoolAssessment = {
+//   title: 'Middle School Career & Personality Assessment',
+//   description: 'Comprehensive assessment for grades 5-8 to evaluate cognitive patterns, interests, and career aptitude',
+//   gradeLevel: [5, 6, 7, 8],
+//   type: AssessmentType.PERSONALITY,
+//   status: AssessmentStatus.PUBLISHED,
+//   duration: 45,
+//   questions: [
+//     {
+//       text: 'When working on a group project, which role do you naturally take?',
+//       type: QuestionType.MULTIPLE_CHOICE,
+//       orderIndex: 1,
+//       options: JSON.stringify([
+//         { id: 'g1', text: 'The leader who organizes everything', value: 'leadership' },
+//         { id: 'g2', text: 'The creative one who comes up with ideas', value: 'creative' },
+//         { id: 'g3', text: 'The researcher who finds information', value: 'analytical' },
+//         { id: 'g4', text: 'The peacemaker who helps everyone get along', value: 'interpersonal' }
+//       ])
+//     },
+//     {
+//       text: 'Which type of YouTube videos do you enjoy watching the most?',
+//       type: QuestionType.MULTIPLE_CHOICE,
+//       orderIndex: 2,
+//       options: JSON.stringify([
+//         { id: 'y1', text: 'DIY and How-to videos', value: 'practical_mechanical' },
+//         { id: 'y2', text: 'Gaming and entertainment', value: 'entertainment_tech' },
+//         { id: 'y3', text: 'Educational and fact-based', value: 'academic' },
+//         { id: 'y4', text: 'Art and music tutorials', value: 'artistic' },
+//         { id: 'y5', text: 'Sports and fitness', value: 'physical' }
+//       ])
+//     },
+//     {
+//       text: "When you face a difficult problem in your homework, what's your first approach?",
+//       type: QuestionType.MULTIPLE_CHOICE,
+//       orderIndex: 3,
+//       options: JSON.stringify([
+//         { id: 'h1', text: 'Break it down into smaller parts', value: 'systematic' },
+//         { id: 'h2', text: 'Look for patterns or similarities to other problems', value: 'pattern_recognition' },
+//         { id: 'h3', text: 'Try different solutions until something works', value: 'experimental' },
+//         { id: 'h4', text: 'Ask for help or discuss with others', value: 'collaborative' }
+//       ])
+//     },
+//     {
+//       text: 'Rate your comfort level with using new technology:',
+//       type: QuestionType.LIKERT_SCALE,
+//       orderIndex: 4,
+//       options: JSON.stringify(['Very Uncomfortable', '', '', '', 'Very Comfortable'])
+//     },
+//     {
+//       text: "Which school activities make you lose track of time because you're so focused?",
+//       type: QuestionType.MULTIPLE_CHOICE,
+//       orderIndex: 5,
+//       options: JSON.stringify([
+//         { id: 'a1', text: 'Science experiments', value: 'scientific' },
+//         { id: 'a2', text: 'Writing stories or essays', value: 'literary' },
+//         { id: 'a3', text: 'Solving math problems', value: 'mathematical' },
+//         { id: 'a4', text: 'Art or music projects', value: 'artistic' },
+//         { id: 'a5', text: 'Physical education', value: 'athletic' },
+//         { id: 'a6', text: 'History and social studies', value: 'social_sciences' }
+//       ])
+//     },
+//     {
+//       text: 'What type of problems do you enjoy solving most?',
+//       type: QuestionType.MULTIPLE_CHOICE,
+//       orderIndex: 6,
+//       options: JSON.stringify([
+//         { id: 'p1', text: 'Logic puzzles and brain teasers', value: 'logical' },
+//         { id: 'p2', text: "People's personal or emotional problems", value: 'counseling' },
+//         { id: 'p3', text: 'Hands-on mechanical or technical issues', value: 'technical' },
+//         { id: 'p4', text: 'Creative design challenges', value: 'creative_problem_solving' }
+//       ])
+//     },
+//     {
+//       text: "Describe a project or achievement you're most proud of and why:",
+//       type: QuestionType.OPEN_ENDED,
+//       orderIndex: 7
+//     },
+//     {
+//       text: 'How do you prefer to learn about something new?',
+//       type: QuestionType.MULTIPLE_CHOICE,
+//       orderIndex: 8,
+//       options: JSON.stringify([
+//         { id: 'l1', text: 'Reading and researching independently', value: 'self_directed' },
+//         { id: 'l2', text: 'Watching demonstrations or videos', value: 'visual' },
+//         { id: 'l3', text: 'Hands-on practice and experimentation', value: 'experiential' },
+//         { id: 'l4', text: 'Discussion and group activities', value: 'social_learning' }
+//       ])
+//     },
+//     {
+//       text: 'What kind of future work environment appeals to you most?',
+//       type: QuestionType.MULTIPLE_CHOICE,
+//       orderIndex: 9,
+//       options: JSON.stringify([
+//         { id: 'w1', text: 'Working outdoors or in nature', value: 'nature_oriented' },
+//         { id: 'w2', text: 'In a busy office with lots of people', value: 'social_professional' },
+//         { id: 'w3', text: 'In a creative studio or workshop', value: 'creative_space' },
+//         { id: 'w4', text: 'In a quiet space focusing on detailed work', value: 'focused_individual' },
+//         { id: 'w5', text: 'Different places, always moving around', value: 'dynamic_environment' }
+//       ])
+//     },
+//     {
+//       text: 'Rate how important it is for you to help others in your future career:',
+//       type: QuestionType.LIKERT_SCALE,
+//       orderIndex: 10,
+//       options: JSON.stringify(['Not Important', '', '', '', 'Very Important'])
+//     }
+//   ]
+// };
+
+// async function main() {
+//   const assessment = await prisma.assessment.create({
+//     data: {
+//       title: middleSchoolAssessment.title,
+//       description: middleSchoolAssessment.description,
+//       gradeLevel: middleSchoolAssessment.gradeLevel,
+//       type: middleSchoolAssessment.type,
+//       status: middleSchoolAssessment.status,
+//       duration: middleSchoolAssessment.duration,
+//       questions: {
+//         create: middleSchoolAssessment.questions.map(q => ({
+//           text: q.text,
+//           type: q.type,
+//           options: q.options ? JSON.parse(q.options) : null,
+//           orderIndex: q.orderIndex
+//         }))
+//       }
+//     }
+//   });
+
+//   console.log(`Created middle school assessment with id: ${assessment.id}`);
+// }
+
+// createStudentAssessments()
+//   .catch((e) => {
+//     console.error(e);
+//     process.exit(1);
+//   })
+//   .finally(async () => {
+//     await prisma.$disconnect();
+//   });
+
+
+//   async function createStudentAssessments() {
+//     try {
+      
+//           await prisma.studentAssessment.create({
+//             data: {
+//               studentId:'cm6secjzf000bweb8e4182zqj',
+//               assessmentId: 'cm6trkij30000welcfghaug3b',
+//               status: 'PENDING',
+//               startedAt: null,
+//               completedAt: null
+//             }
+//           });
+        
+//     } catch (error) {
+//       console.error('Error creating StudentAssessments:', error);
+//       throw error;
+//     }
+//   }
+
+const  { PrismaClient }  =require('@prisma/client');
 const prisma = new PrismaClient();
 
-const middleSchoolAssessment = {
-  title: 'Middle School Career & Personality Assessment',
-  description: 'Comprehensive assessment for grades 5-8 to evaluate cognitive patterns, interests, and career aptitude',
-  gradeLevel: [5, 6, 7, 8],
-  type: AssessmentType.PERSONALITY,
-  status: AssessmentStatus.PUBLISHED,
-  duration: 45,
-  questions: [
-    {
-      text: 'When working on a group project, which role do you naturally take?',
-      type: QuestionType.MULTIPLE_CHOICE,
-      orderIndex: 1,
-      options: JSON.stringify([
-        { id: 'g1', text: 'The leader who organizes everything', value: 'leadership' },
-        { id: 'g2', text: 'The creative one who comes up with ideas', value: 'creative' },
-        { id: 'g3', text: 'The researcher who finds information', value: 'analytical' },
-        { id: 'g4', text: 'The peacemaker who helps everyone get along', value: 'interpersonal' }
-      ])
-    },
-    {
-      text: 'Which type of YouTube videos do you enjoy watching the most?',
-      type: QuestionType.MULTIPLE_CHOICE,
-      orderIndex: 2,
-      options: JSON.stringify([
-        { id: 'y1', text: 'DIY and How-to videos', value: 'practical_mechanical' },
-        { id: 'y2', text: 'Gaming and entertainment', value: 'entertainment_tech' },
-        { id: 'y3', text: 'Educational and fact-based', value: 'academic' },
-        { id: 'y4', text: 'Art and music tutorials', value: 'artistic' },
-        { id: 'y5', text: 'Sports and fitness', value: 'physical' }
-      ])
-    },
-    {
-      text: "When you face a difficult problem in your homework, what's your first approach?",
-      type: QuestionType.MULTIPLE_CHOICE,
-      orderIndex: 3,
-      options: JSON.stringify([
-        { id: 'h1', text: 'Break it down into smaller parts', value: 'systematic' },
-        { id: 'h2', text: 'Look for patterns or similarities to other problems', value: 'pattern_recognition' },
-        { id: 'h3', text: 'Try different solutions until something works', value: 'experimental' },
-        { id: 'h4', text: 'Ask for help or discuss with others', value: 'collaborative' }
-      ])
-    },
-    {
-      text: 'Rate your comfort level with using new technology:',
-      type: QuestionType.LIKERT_SCALE,
-      orderIndex: 4,
-      options: JSON.stringify(['Very Uncomfortable', '', '', '', 'Very Comfortable'])
-    },
-    {
-      text: "Which school activities make you lose track of time because you're so focused?",
-      type: QuestionType.MULTIPLE_CHOICE,
-      orderIndex: 5,
-      options: JSON.stringify([
-        { id: 'a1', text: 'Science experiments', value: 'scientific' },
-        { id: 'a2', text: 'Writing stories or essays', value: 'literary' },
-        { id: 'a3', text: 'Solving math problems', value: 'mathematical' },
-        { id: 'a4', text: 'Art or music projects', value: 'artistic' },
-        { id: 'a5', text: 'Physical education', value: 'athletic' },
-        { id: 'a6', text: 'History and social studies', value: 'social_sciences' }
-      ])
-    },
-    {
-      text: 'What type of problems do you enjoy solving most?',
-      type: QuestionType.MULTIPLE_CHOICE,
-      orderIndex: 6,
-      options: JSON.stringify([
-        { id: 'p1', text: 'Logic puzzles and brain teasers', value: 'logical' },
-        { id: 'p2', text: "People's personal or emotional problems", value: 'counseling' },
-        { id: 'p3', text: 'Hands-on mechanical or technical issues', value: 'technical' },
-        { id: 'p4', text: 'Creative design challenges', value: 'creative_problem_solving' }
-      ])
-    },
-    {
-      text: "Describe a project or achievement you're most proud of and why:",
-      type: QuestionType.OPEN_ENDED,
-      orderIndex: 7
-    },
-    {
-      text: 'How do you prefer to learn about something new?',
-      type: QuestionType.MULTIPLE_CHOICE,
-      orderIndex: 8,
-      options: JSON.stringify([
-        { id: 'l1', text: 'Reading and researching independently', value: 'self_directed' },
-        { id: 'l2', text: 'Watching demonstrations or videos', value: 'visual' },
-        { id: 'l3', text: 'Hands-on practice and experimentation', value: 'experiential' },
-        { id: 'l4', text: 'Discussion and group activities', value: 'social_learning' }
-      ])
-    },
-    {
-      text: 'What kind of future work environment appeals to you most?',
-      type: QuestionType.MULTIPLE_CHOICE,
-      orderIndex: 9,
-      options: JSON.stringify([
-        { id: 'w1', text: 'Working outdoors or in nature', value: 'nature_oriented' },
-        { id: 'w2', text: 'In a busy office with lots of people', value: 'social_professional' },
-        { id: 'w3', text: 'In a creative studio or workshop', value: 'creative_space' },
-        { id: 'w4', text: 'In a quiet space focusing on detailed work', value: 'focused_individual' },
-        { id: 'w5', text: 'Different places, always moving around', value: 'dynamic_environment' }
-      ])
-    },
-    {
-      text: 'Rate how important it is for you to help others in your future career:',
-      type: QuestionType.LIKERT_SCALE,
-      orderIndex: 10,
-      options: JSON.stringify(['Not Important', '', '', '', 'Very Important'])
-    }
-  ]
-};
 
-async function main() {
-  const assessment = await prisma.assessment.create({
-    data: {
-      title: middleSchoolAssessment.title,
-      description: middleSchoolAssessment.description,
-      gradeLevel: middleSchoolAssessment.gradeLevel,
-      type: middleSchoolAssessment.type,
-      status: middleSchoolAssessment.status,
-      duration: middleSchoolAssessment.duration,
-      questions: {
-        create: middleSchoolAssessment.questions.map(q => ({
-          text: q.text,
-          type: q.type,
-          options: q.options ? JSON.parse(q.options) : null,
-          orderIndex: q.orderIndex
-        }))
-      }
-    }
-  });
+async function deleteAssessment(assessmentId) {
+  try {
+    await prisma.$transaction(async (prisma) => {
+      // Delete related responses first
+      await prisma.response.deleteMany({
+        where: { assessmentId },
+      });
 
-  console.log(`Created middle school assessment with id: ${assessment.id}`);
+      // Delete related questions
+      await prisma.question.deleteMany({
+        where: { assessmentId },
+      });
+
+      // Delete student assessment relationships
+      await prisma.studentAssessment.deleteMany({
+        where: { assessmentId },
+      });
+
+      // Finally delete the assessment
+      await prisma.assessment.delete({
+        where: { id: assessmentId },
+      });
+
+      console.log(`Successfully deleted assessment ${assessmentId} and all related records`);
+    });
+  } catch (error) {
+    console.error('Error deleting assessment:', error);
+    throw error;
+  }
 }
 
-createStudentAssessments()
+async function main() {
+  // Replace with the actual assessment ID you want to delete
+  const assessmentIdToDelete = 'cm6trjzze0000wer8hjivyejd';
+  
+  await deleteAssessment(assessmentIdToDelete);
+}
+
+main()
   .catch((e) => {
     console.error(e);
     process.exit(1);
@@ -516,23 +587,3 @@ createStudentAssessments()
   .finally(async () => {
     await prisma.$disconnect();
   });
-
-
-  async function createStudentAssessments() {
-    try {
-      
-          await prisma.studentAssessment.create({
-            data: {
-              studentId:'cm6secjzf000bweb8e4182zqj',
-              assessmentId: 'cm6trkij30000welcfghaug3b',
-              status: 'PENDING',
-              startedAt: null,
-              completedAt: null
-            }
-          });
-        
-    } catch (error) {
-      console.error('Error creating StudentAssessments:', error);
-      throw error;
-    }
-  }

@@ -25,6 +25,7 @@ const studentSchema = userSchema.extend({
 const parentSchema = userSchema.extend({
   role: z.literal('PARENT'),
   phone: z.string().optional(),
+  studentEmail: z.string().email(),
 })
 
 const schoolSchema = userSchema.extend({
@@ -103,16 +104,34 @@ export async function POST(req: NextRequest) {
           })
           break
 
-        case 'PARENT':
-          await tx.parent.create({
-            data: {
-              userId: newUser.id,
-              firstName: validatedData.firstName,
-              lastName: validatedData.lastName,
-              phone: validatedData.phone,
+          case 'PARENT':
+            // Find student by email
+            const student = await tx.student.findFirst({
+              where: {
+                user: {
+                  email: validatedData.studentEmail
+                }
+              }
+            })
+            
+            if (!student) {
+              throw new Error('Student not found with the provided email')
             }
-          })
-          break
+            
+            const parent = await tx.parent.create({
+              data: {
+                userId: newUser.id,
+                firstName: validatedData.firstName,
+                lastName: validatedData.lastName,
+                phone: validatedData.phone,
+                students: {
+                  connect: {
+                    id: student.id
+                  }
+                }
+              }
+            })
+            break
 
         case 'SCHOOL_ADMIN':
           await tx.school.create({

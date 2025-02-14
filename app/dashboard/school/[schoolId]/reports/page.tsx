@@ -61,25 +61,29 @@ interface ReportData {
 
 interface CustomTooltipProps {
   active?: boolean
-  payload?: Array<any>
+  payload?: Array<{ payload: { name: string; value: number }; color: string; value: number }>
   label?: string
 }
 
-const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-4 rounded-xl shadow-lg border border-gray-100">
-        <p className="font-semibold text-gray-800">{label}</p>
-        {payload.map((item, index) => (
-          <p key={index} className="text-sm text-gray-600">
-            <span 
-              className="inline-block w-3 h-3 rounded-full mr-2" 
-              style={{ backgroundColor: item.color || item.fill }}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white p-4 rounded-xl shadow-lg border border-gray-100 backdrop-blur-sm"
+      >
+        <p className="font-semibold text-gray-900 mb-2">{label}</p>
+        {payload.map((entry, index) => (
+          <div key={index} className="flex items-center gap-2 text-gray-700">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: entry.color || '#2563EB' }}
             />
-            {item.value}%
-          </p>
+            <span className="font-medium">{Math.round(entry.value)}%</span>
+          </div>
         ))}
-      </div>
+      </motion.div>
     )
   }
   return null
@@ -121,21 +125,21 @@ const DashboardCard: React.FC<{
   description?: string
   className?: string
 }> = ({ title, icon: Icon, children, description, className = "" }) => (
-  <Card className={`bg-white shadow-md hover:shadow-xl transition-all duration-300 rounded-xl ${className}`}>
+  <Card className={`bg-white shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl border border-gray-100 ${className}`}>
     <CardHeader className="space-y-2">
-      <CardTitle className="flex items-center gap-3 text-xl">
+      <CardTitle className="flex items-center gap-3 text-xl font-semibold">
         <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100">
           <Icon className="w-6 h-6 text-blue-600" />
         </div>
         {title}
       </CardTitle>
       {description && (
-        <CardDescription className="text-gray-600">
+        <CardDescription className="text-gray-600 text-sm">
           {description}
         </CardDescription>
       )}
     </CardHeader>
-    <CardContent>{children}</CardContent>
+    <CardContent className="p-6">{children}</CardContent>
   </Card>
 )
 
@@ -185,17 +189,21 @@ const SchoolPsychometricDashboard: React.FC = () => {
       setExporting(true)
       const element = dashboardRef.current
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 3,
         logging: false,
-        useCORS: true
+        useCORS: true,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight
       })
       
       const imgWidth = 210
       const imgHeight = (canvas.height * imgWidth) / canvas.width
+      const orientation = imgHeight > imgWidth ? 'portrait' : 'landscape'
       
       const pdf = new jsPDF({
-        orientation: imgHeight > imgWidth ? 'portrait' : 'landscape',
-        unit: 'mm'
+        orientation,
+        unit: 'mm',
+        format: [imgWidth, imgHeight]
       })
       
       pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight)
@@ -222,11 +230,12 @@ const SchoolPsychometricDashboard: React.FC = () => {
   )
 
   const chartTheme = {
-    grid: '#E5E7EB',
-    text: '#374151',
+    grid: '#E2E8F0',
+    text: '#1F2937',
     primary: '#2563EB',
     secondary: '#60A5FA',
-    background: '#F8FAFC'
+    background: '#F8FAFC',
+    accent: '#818CF8'
   }
 
   return (
@@ -246,7 +255,7 @@ const SchoolPsychometricDashboard: React.FC = () => {
             <button
               onClick={downloadAsPDF}
               disabled={exporting}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm md:text-base"
             >
               {exporting ? (
                 <>
@@ -275,7 +284,7 @@ const SchoolPsychometricDashboard: React.FC = () => {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white p-6 rounded-xl shadow-md"
+            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
           >
             <div className="flex items-center gap-4">
               <div className="p-3 bg-blue-50 rounded-lg">
@@ -290,13 +299,11 @@ const SchoolPsychometricDashboard: React.FC = () => {
             </div>
           </motion.div>
 
-        
-
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white p-6 rounded-xl shadow-md md:col-span-2 lg:col-span-1"
+            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
           >
             <div className="flex items-center gap-4">
               <div className="p-3 bg-purple-50 rounded-lg">
@@ -314,126 +321,133 @@ const SchoolPsychometricDashboard: React.FC = () => {
         </div>
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Cognitive Profile */}
           <DashboardCard
-            title="Cognitive Profile Analysis"
-            icon={Brain}
-            description="Distribution of cognitive abilities across key domains"
-          >
-            <div className="h-[400px] p-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart 
-                  data={Object.entries(reportData.metrics.cognitiveProfile)
-                    .map(([name, value]) => ({ name, value }))}
-                >
-                  <PolarGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
-                  <PolarAngleAxis 
-                    dataKey="name" 
-                    tick={{ fill: chartTheme.text, fontSize: 12 }}
-                  />
-                  <Radar
-                    name="Cognitive Score"
-                    dataKey="value"
-                    fill={chartTheme.primary}
-                    fillOpacity={0.3}
-                    stroke={chartTheme.primary}
-                    strokeWidth={2}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </DashboardCard>
-
-          {/* Learning Styles */}
-          <DashboardCard
-            title="Learning Style Preferences"
-            icon={Lightbulb}
-            description="Analysis of predominant learning methods"
-          >
-            <div className="h-[400px] p-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart 
-                  data={reportData.metrics.learningStyles}
-                  barSize={40}
-                >
-                  <CartesianGrid 
-                    strokeDasharray="3 3" 
-                    stroke={chartTheme.grid}
-                    vertical={false}
-                  />
-                  <XAxis 
-                    dataKey="name" 
-                    tick={{ fill: chartTheme.text }}
-                    axisLine={{ stroke: chartTheme.grid }}
-                  />
-                  <YAxis 
-                    unit="%" 
-                    tick={{ fill: chartTheme.text }}
-                    axisLine={{ stroke: chartTheme.grid }}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar
-                    dataKey="value"
-                    fill={chartTheme.primary}
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
+              title="Cognitive Profile"
+              icon={Brain}
+              description="Distribution of cognitive abilities"
+            >
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart 
+                    data={Object.entries(reportData.metrics.cognitiveProfile)
+                      .map(([name, value]) => ({ name, value: Math.round(value) }))}
+                    margin={{ top: 20, right: 30, bottom: 30, left: 30 }}
+                  >
+                    <PolarGrid stroke={chartTheme.grid} />
+                    <PolarAngleAxis 
+                      dataKey="name" 
+                      tick={{ fill: chartTheme.text, fontSize: 12 }}
+                    />
+                    <Radar
+                      name="Score"
+                      dataKey="value"
+                      fill={chartTheme.primary}
+                      fillOpacity={0.3}
+                      stroke={chartTheme.primary}
+                      strokeWidth={2}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend wrapperStyle={{ paddingTop: 20 }} />
+                  </RadarChart>
                 </ResponsiveContainer>
-            </div>
-          </DashboardCard>
+              </div>
+            </DashboardCard>
+
+            {/* Learning Styles */}
+            <DashboardCard
+              title="Learning Styles"
+              icon={Lightbulb}
+              description="Preferred learning methods"
+            >
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart 
+                    data={reportData.metrics.learningStyles.map(style => ({
+                      ...style,
+                      value: Math.round(style.value)
+                    }))}
+                    margin={{ top: 20, right: 30, bottom: 50, left: 30 }}
+                    barSize={32}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartTheme.grid} />
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ fill: chartTheme.text, fontSize: 12 }}
+                      axisLine={{ stroke: chartTheme.grid }}
+                      interval={0}
+                      angle={-45}
+                      textAnchor="end"
+                    />
+                    <YAxis 
+                      unit="%" 
+                      tick={{ fill: chartTheme.text, fontSize: 12 }}
+                      axisLine={{ stroke: chartTheme.grid }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar
+                      dataKey="value"
+                      fill={chartTheme.primary}
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </DashboardCard>
 
           {/* Career Distribution */}
           <DashboardCard
-            title="Career Interest Trends"
-            icon={Briefcase}
-            description="Evolution of student career preferences"
-          >
-            <div className="h-[400px] p-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={reportData.metrics.careerDistribution}>
-                  <defs>
-                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={chartTheme.primary} stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor={chartTheme.primary} stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid 
-                    strokeDasharray="3 3" 
-                    stroke={chartTheme.grid}
-                    vertical={false}
-                  />
-                  <XAxis 
-                    dataKey="name" 
-                    tick={{ fill: chartTheme.text }}
-                    axisLine={{ stroke: chartTheme.grid }}
-                  />
-                  <YAxis 
-                    unit="%" 
-                    tick={{ fill: chartTheme.text }}
-                    axisLine={{ stroke: chartTheme.grid }}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke={chartTheme.primary}
-                    fillOpacity={1}
-                    fill="url(#colorValue)"
-                    strokeWidth={2}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </DashboardCard>
+              title="Career Interests"
+              icon={Briefcase}
+              description="Student career preferences"
+              className="lg:col-span-2"
+            >
+              <div className="h-[400px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart 
+                    data={reportData.metrics.careerDistribution.map(career => ({
+                      ...career,
+                      value: Math.round(career.value)
+                    }))}
+                    margin={{ top: 20, right: 30, bottom: 30, left: 30 }}
+                  >
+                    <defs>
+                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={chartTheme.primary} stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor={chartTheme.primary} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartTheme.grid} />
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ fill: chartTheme.text, fontSize: 12 }}
+                      axisLine={{ stroke: chartTheme.grid }}
+                    />
+                    <YAxis 
+                      unit="%" 
+                      tick={{ fill: chartTheme.text, fontSize: 12 }}
+                      axisLine={{ stroke: chartTheme.grid }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke={chartTheme.primary}
+                      fill="url(#colorValue)"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </DashboardCard>
 
           {/* Student Strengths */}
           <DashboardCard
             title="Notable Student Strengths"
             icon={GraduationCap}
             description="Most prevalent strengths in student population"
+            className="lg:col-span-2"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
               <AnimatePresence>
@@ -448,12 +462,9 @@ const SchoolPsychometricDashboard: React.FC = () => {
                       duration: 0.3,
                       ease: "easeOut"
                     }}
-                    className="group relative p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-md transition-all"
+                    className="group relative p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-md transition-all border border-blue-100"
                   >
-                    <div className="absolute inset-0 bg-blue-600 opacity-0 group-hover:opacity-5 rounded-xl transition-opacity" />
-                    <h3 className="font-semibold text-blue-700 mb-2 group-hover:text-blue-800 transition-colors">
-                      {strength.title}
-                    </h3>
+                    <h3 className="font-semibold text-blue-700 mb-2">{strength.title}</h3>
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-2 bg-blue-200 rounded-full overflow-hidden">
                         <motion.div

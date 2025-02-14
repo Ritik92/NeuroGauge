@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { useQuery } from '@tanstack/react-query'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { signIn } from 'next-auth/react'
@@ -16,7 +17,14 @@ export default function SignupPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [role, setRole] = useState('STUDENT')
-
+  const { data: schools } = useQuery({
+    queryKey: ['schools'],
+    queryFn: async () => {
+      const response = await fetch('/api/schools')
+      if (!response.ok) throw new Error('Failed to fetch schools')
+      return response.json()
+    }
+  })
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -32,6 +40,7 @@ export default function SignupPage() {
     state: '',
     country: '',
     schoolId: '',
+    studentEmail: '',
   })
 
   const handleInputChange = (e) => {
@@ -63,6 +72,7 @@ export default function SignupPage() {
       }),
       ...(role === 'PARENT' && {
         phone: formData.phone,
+        studentEmail: formData.studentEmail,
       }),
       ...(role === 'SCHOOL_ADMIN' && {
         name: formData.name,
@@ -293,15 +303,23 @@ export default function SignupPage() {
                           </div>
                         </div>
                         <div>
-                          <Label htmlFor="schoolId">School ID</Label>
-                          <Input
-                            name="schoolId"
-                            value={formData.schoolId}
-                            onChange={handleInputChange}
-                            required
-                            className="bg-white"
-                          />
-                        </div>
+  <Label htmlFor="schoolId">School</Label>
+  <Select
+    value={formData.schoolId}
+    onValueChange={(value) => setFormData(prev => ({ ...prev, schoolId: value }))}
+  >
+    <SelectTrigger className="bg-white">
+      <SelectValue placeholder="Select your school" />
+    </SelectTrigger>
+    <SelectContent>
+      {schools?.sort((a, b) => a.name.localeCompare(b.name)).map((school) => (
+        <SelectItem key={school.id} value={school.id}>
+          {school.name}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+</div>
                       </motion.div>
                     )}
 
@@ -320,6 +338,16 @@ export default function SignupPage() {
                           onChange={handleInputChange}
                           className="bg-white"
                         />
+                        <Label htmlFor="studentEmail">Student Email</Label>
+  <Input
+    type="email"
+    name="studentEmail" 
+    value={formData.studentEmail}
+    onChange={handleInputChange}
+    required
+    className="bg-white"
+    placeholder="Enter your child's email address"
+  />
                       </motion.div>
                     )}
 

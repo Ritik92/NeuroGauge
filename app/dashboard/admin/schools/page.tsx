@@ -21,9 +21,13 @@ interface School {
   state: string;
   type: string;
   studentCount: number;
-  adminName: string;
+  adminFirstName: string;
+  adminLastName: string;
   email: string;
   phone: string;
+  user:{
+    email:string;
+  }
 }
 
 async function getSchools() {
@@ -42,6 +46,7 @@ export default function SchoolsPage() {
     const fetchSchools = async () => {
       try {
         const data = await getSchools();
+        console.log(data);
         setSchools(data);
       } catch (error) {
         console.error('Error fetching schools:', error);
@@ -174,15 +179,15 @@ export default function SchoolsPage() {
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                           <User className="w-4 h-4" />
-                          <span>{school.adminName}</span>
+                          <span>{school.adminFirstName} {school.adminLastName}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                           <Mail className="w-4 h-4" />
                           <a 
-                            href={`mailto:${school.email}`}
+                            href={`mailto:${school.user.email}`}
                             className="hover:text-blue-600 transition-colors"
                           >
-                            {school.email}
+                            {school.user.email}
                           </a>
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">

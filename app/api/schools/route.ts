@@ -7,7 +7,8 @@ export async function GET() {
   try {
     const schools = await prisma.school.findMany({
       include: {
-        reports: true
+        reports: true,
+        user:true
       }
     });
     return NextResponse.json(schools);
