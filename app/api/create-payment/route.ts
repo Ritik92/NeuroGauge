@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     console.log(session)
     const { studentCount } = await req.json();
     console.log(studentCount)
-    const amount = studentCount * 1; // ₹100 per student
+    const amount = studentCount * 100; // ₹100 per student
     const user=await prisma.user.findUnique({
         where:{
             email:session.user.email
