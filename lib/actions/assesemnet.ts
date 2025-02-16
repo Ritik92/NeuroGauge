@@ -1,7 +1,7 @@
 // app/actions/assessment.ts
 'use server'
 
-import { db } from "@/lib/db"
+import  db  from "@/lib/db"
 import { getServerSession } from "next-auth/next"
 
 import { revalidatePath } from "next/cache"
