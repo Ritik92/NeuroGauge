@@ -1,6 +1,6 @@
 // lib/csvUtils.ts
 import Papa from 'papaparse';
-
+export const MAX_STUDENTS = 1000;
 export async function parseCSV<T>(file: File): Promise<{ data: T[], errors: string[] }> {
   return new Promise((resolve) => {
     Papa.parse(file, {
@@ -18,7 +18,12 @@ export function validateStudentData(data: any[]): string[] {
   const errors: string[] = [];
   const requiredFields = ['firstName', 'lastName', 'email', 'dateOfBirth', 'grade'];
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (data.length > MAX_STUDENTS) {
+    errors.push(`Cannot upload more than ${MAX_STUDENTS} students at once. Current count: ${data.length}`);
+    return errors;
+  }
   
+
   data.forEach((row, index) => {
     // Check required fields
     requiredFields.forEach(field => {

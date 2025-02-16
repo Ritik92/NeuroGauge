@@ -545,23 +545,23 @@ async function deleteAssessment(assessmentId) {
   try {
     await prisma.$transaction(async (prisma) => {
       // Delete related responses first
-      await prisma.response.deleteMany({
-        where: { assessmentId },
-      });
-
-      // Delete related questions
-      await prisma.question.deleteMany({
-        where: { assessmentId },
-      });
-
-      // Delete student assessment relationships
-      await prisma.studentAssessment.deleteMany({
-        where: { assessmentId },
-      });
+      
 
       // Finally delete the assessment
-      await prisma.assessment.delete({
-        where: { id: assessmentId },
+      await prisma.user.deleteMany({
+        where: {
+          role: 'STUDENT',
+          student: {
+            schoolId: assessmentId
+          }
+        }
+      });
+      await prisma.student.deleteMany({
+        where: {
+          
+            schoolId: assessmentId
+          
+        }
       });
 
       console.log(`Successfully deleted assessment ${assessmentId} and all related records`);
@@ -574,7 +574,7 @@ async function deleteAssessment(assessmentId) {
 
 async function main() {
   // Replace with the actual assessment ID you want to delete
-  const assessmentIdToDelete = 'cm6trjzze0000wer8hjivyejd';
+  const assessmentIdToDelete = 'cm75822qg0002wep0q5wbyj2e';
   
   await deleteAssessment(assessmentIdToDelete);
 }

@@ -41,10 +41,11 @@ const user =session.user;
       { status: 500 }
     );
   }
+ 
 }
 
 async function processStudents(data: any[], schoolId: string) {
-  const batchSize = 100; // Process in batches
+  const batchSize = 50; // Process in batches
   const results = {
     createdCount: 0,
     errorCount: 0,
