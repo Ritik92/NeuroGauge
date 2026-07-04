@@ -1,9 +1,7 @@
+import prisma from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import { hash } from 'bcrypt'
 import * as z from 'zod'
-
-const prisma = new PrismaClient()
 
 // Base user schema
 const userSchema = z.object({

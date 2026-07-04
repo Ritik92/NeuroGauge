@@ -64,3 +64,92 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ==========================================================================
+   NeuroGauge design system — theme "Lab · warmed" (imported from Claude Design)
+   Scope all redesigned surfaces under .ng so tokens resolve to var(--*).
+   ========================================================================== */
+.ng {
+  --canvas: #F6F8F8;
+  --surface: #FFFFFF;
+  --border-c: #E4EAEA;
+  --ink: #16211F;
+  --muted: #5E6B6A;
+  --pri: #0E9384;
+  --pri-h: #0B7A6E;
+  --tint: #E4F2EF;
+  --accent: #F1785F;
+  --rad-card: 14px;
+  --rad-btn: 10px;
+  --w-head: 600;
+  --letter-head: -0.015em;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-hover: 0 18px 40px -24px rgba(16, 50, 46, 0.28);
+  --num-color: #0E9384;
+  --d1: #0E9384;
+  --d2: #F1785F;
+  --d3: #3E9AE0;
+  --d4: #E8A33D;
+  --d5: #9B5DE5;
+  --font-head: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+/* interaction helpers (design used style-hover / style-focus attributes) */
+.ng-btn-primary { transition: background 0.15s ease, transform 0.12s ease; }
+.ng-btn-primary:hover { background: var(--pri-h) !important; }
+.ng-btn-primary:active { transform: translateY(1px); }
+.ng-btn-soft { transition: background 0.15s ease, border-color 0.15s ease; }
+.ng-btn-soft:hover { background: var(--tint) !important; }
+.ng-link { transition: color 0.15s ease; }
+.ng-link:hover { color: var(--pri) !important; }
+.ng-input {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.ng-input:focus {
+  border-color: var(--pri) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pri) 18%, transparent) !important;
+}
+.ng-input::placeholder { color: color-mix(in srgb, var(--muted) 75%, transparent); }
+.ng-lift { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.ng-lift:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+
+@keyframes ng-load { 0% { width: 8%; } 70% { width: 82%; } 100% { width: 92%; } }
+@keyframes ng-pulse { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.06); } }
+@keyframes ng-fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ng-lift, .ng-btn-primary, .ng-btn-soft { transition: none; }
+  .ng-lift:hover, .ng-btn-primary:active { transform: none; }
+}
+
+/* responsive helpers for the landing page */
+.ng-nav-center { display: flex; align-items: center; gap: 26px; }
+.ng-hero-grid { display: grid; grid-template-columns: 1.02fr 0.98fr; gap: 44px; align-items: center; }
+.ng-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.ng-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.ng-foot-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 24px; }
+.ng-auth-split { display: flex; }
+.ng-auth-brand { width: 44%; }
+@media (max-width: 960px) {
+  .ng-hero-grid { grid-template-columns: 1fr; }
+  .ng-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .ng-foot-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 840px) {
+  .ng-nav-center { display: none; }
+  .ng-auth-brand { display: none; }
+}
+@media (max-width: 620px) {
+  .ng-grid-3 { grid-template-columns: 1fr; }
+  .ng-grid-4 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 720px) {
+  .ng-hide-narrow { display: none !important; }
+}
+@media (max-width: 900px) {
+  .ng-dash-cols { grid-template-columns: 1fr !important; }
+}

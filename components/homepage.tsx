@@ -1,397 +1,319 @@
-'use client'
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
-import { 
-  Brain, Sparkles, Target, LineChart, ArrowRight, 
-  GraduationCap, MenuIcon, X, ChevronDown 
-} from 'lucide-react';
-import Link from 'next/link';
+'use client';
 
-const LandingPage = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeTestimonial, setActiveTestimonial] = useState(0);
-  const targetRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: targetRef,
-    offset: ["start start", "end end"]
-  });
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-  const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 };
-  const y = useSpring(useTransform(scrollYProgress, [0, 1], [0, -100]), springConfig);
+const BrandMark = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2l8.5 5v10L12 22 3.5 17V7z" />
+    <path d="M7 12h3l1.5-3 2 6 1.5-3h1.5" />
+  </svg>
+);
 
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+const testimonials = [
+  {
+    quote: '“NeuroGauge changed how we understand and support students — the insight per report is remarkable.”',
+    initials: 'SM',
+    name: 'Dr. Sarah Mitchell',
+    role: 'Principal, Edison High School',
+  },
+  {
+    quote: '“I can pinpoint a student’s strengths and growth areas in minutes — with evidence I actually trust.”',
+    initials: 'JW',
+    name: 'James Wilson',
+    role: 'School Counselor',
+  },
+  {
+    quote: '“For the first time I understand how my daughter learns best. It changed how we support her at home.”',
+    initials: 'LC',
+    name: 'Lisa Chen',
+    role: 'Parent',
+  },
+];
 
-  const testimonials = [
-    {
-      name: "Dr. Sarah Mitchell",
-      role: "Principal, Edison High School",
-      image: "/doctor_female_2.jpg",
-      quote: "NeuroGauge has transformed how we understand and support our students. The insights we've gained are invaluable.",
-    },
-    {
-      name: "James Wilson",
-      role: "School Counselor",
-      image: "/doctor_male.jpg",
-      quote: "The detailed reports help us identify student strengths and areas for growth with unprecedented accuracy.",
-    },
-    {
-      name: "Lisa Chen",
-      role: "Parent",
-      image: "/doctor_female.jpg",
-      quote: "Finally, we have clear insights into how our child learns best. This has been a game-changer for their education.",
-    }
-  ];
+const features = [
+  {
+    title: 'AI-powered analysis',
+    body: 'Thousands of signals distilled into one clear cognitive profile you can actually act on.',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 3l1.9 5.6L19.5 10.5 13.9 12.4 12 18 10.1 12.4 4.5 10.5 10.1 8.6z" />
+        <path d="M19 3v3" /><path d="M20.5 4.5h-3" />
+      </svg>
+    ),
+  },
+  {
+    title: 'Adaptive assessments',
+    body: 'Questions adjust to each student in real time, so every result is precise — never one-size-fits-all.',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+        <circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1.5" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    title: 'Reports parents understand',
+    body: 'Plain-language insights and next steps — no psychology degree required.',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 3v18h18" /><path d="M7 14l3-3 3 3 5-6" />
+      </svg>
+    ),
+  },
+];
 
-  const stats = [
-    { value: "500+", label: "Schools Enrolled" },
-    { value: "100k+", label: "Students Assessed" },
-    { value: "95%", label: "Satisfaction Rate" },
-    { value: "30%", label: "Average Improvement" }
-  ];
+const roles = [
+  { title: 'Schools', body: 'See strengths and support needs across every cohort.', accent: false,
+    icon: <><path d="M3 21h18" /><path d="M5 21V8l7-4 7 4v13" /><path d="M9 21v-6h6v6" /></> },
+  { title: 'Students', body: 'Discover how you learn and where you’ll thrive.', accent: false,
+    icon: <><path d="M22 10 12 5 2 10l10 5 10-5z" /><path d="M6 12v5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5v-5" /></> },
+  { title: 'Parents', body: 'Understand your child in language that makes sense.', accent: true,
+    icon: <path d="M12 20.5S4 14.8 4 9.4A4.2 4.2 0 0 1 12 6a4.2 4.2 0 0 1 8 3.4c0 5.4-8 11.1-8 11.1z" /> },
+  { title: 'Counselors', body: 'Guide course and career choices with real evidence.', accent: false,
+    icon: <><circle cx="12" cy="12" r="9" /><path d="M15.5 8.5l-2.2 5.3-5.3 2.2 2.2-5.3z" /></> },
+];
 
-  const features = [
-    {
-      icon: <Brain className="text-blue-600" />,
-      title: "AI-Powered Analysis",
-      description: "Advanced algorithms provide deep insights into learning patterns and cognitive strengths"
-    },
-    {
-      icon: <Target className="text-blue-600" />,
-      title: "Personalized Assessment",
-      description: "Tailored tests adapt to each student's unique responses and patterns"
-    },
-    {
-      icon: <LineChart className="text-blue-600" />,
-      title: "Comprehensive Reports",
-      description: "Detailed analytics with actionable recommendations for improvement"
-    }
-  ];
+const steps = [
+  { n: '01', title: 'Assess', body: 'Students take a 20-minute adaptive assessment on any device.',
+    icon: <><path d="M9 4h6v3H9z" /><path d="M8 5H6v16h12V5h-2" /><path d="M9 13l2 2 4-4" /></> },
+  { n: '02', title: 'Analyze', body: 'Our AI builds a full cognitive, learning-style and MBTI profile.',
+    icon: <path d="M3 12h4l3 8 4-16 3 8h4" /> },
+  { n: '03', title: 'Guide', body: 'A shareable report lays out strengths, fits and next steps.',
+    icon: <><circle cx="12" cy="12" r="9" /><path d="M15.5 8.5l-2.2 5.3-5.3 2.2 2.2-5.3z" /></> },
+];
+
+export default function LandingPage() {
+  const router = useRouter();
+  const [active, setActive] = useState(0);
+  const t = testimonials[active];
+
+  const wrap: React.CSSProperties = { maxWidth: 1160, margin: '0 auto', padding: '0 40px' };
+  const sectionKicker = (label: string) => (
+    <div style={{ fontSize: 12, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--num-color)', fontWeight: 600 }}>{label}</div>
+  );
+  const h2: React.CSSProperties = { fontFamily: 'var(--font-head)', fontSize: 32, fontWeight: 'var(--w-head)' as any, letterSpacing: 'var(--letter-head)', color: 'var(--ink)', margin: '12px 0 0' };
+  const cardBase: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 'var(--rad-card)', boxShadow: 'var(--shadow-card)' };
 
   return (
-    <div ref={targetRef} className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-blue-50">
-      {/* Navigation */}
-      <nav className={`fixed w-full z-50 transition-all duration-300 ${
-  isScrolled ? 'bg-white/80 backdrop-blur-lg shadow-lg' : 'bg-transparent'
-}`}>
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="flex items-center justify-between h-16 md:h-20">
-      <div className="flex items-center space-x-2">
-        <div className="relative">
-          <Brain className="w-8 h-8 text-blue-600" />
-        </div>
-        <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-          NeuroGauge
-        </span>
-      </div>
-
-      {/* Desktop Navigation */}
-      <div className="hidden md:flex space-x-8">
-        {['Features', 'About', 'Testimonials', 'Contact'].map((item) => (
-          <a
-            key={item}
-            className="text-gray-600 hover:text-blue-600 transition-colors"
-            href={`#${item.toLowerCase()}`}
-          >
-            {item}
-          </a>
-        ))}
-      </div>
-
-      {/* Mobile Menu Button */}
-      <button
-        className="md:hidden p-2"
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-      >
-        {isMenuOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
-      </button>
-
-      {/* Desktop CTA Buttons */}
-      <div className="hidden md:flex space-x-4">
-        <Link href="/auth/signin">
-          <button className="px-6 py-2 rounded-full text-blue-600 border border-blue-600 hover:bg-blue-50 transition-colors">
-            Login
-          </button>
-        </Link>
-        <button className="px-6 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 transition-opacity">
-          Register School
-        </button>
-      </div>
-    </div>
-  </div>
-
-  {/* Mobile Menu */}
-  {isMenuOpen && (
-    <div className="md:hidden bg-white border-t">
-      <div className="px-4 py-4 space-y-4">
-        {['Features', 'About', 'Testimonials', 'Contact'].map((item) => (
-          <a
-            key={item}
-            className="block text-gray-600 hover:text-blue-600 transition-colors"
-            href={`#${item.toLowerCase()}`}
-          >
-            {item}
-          </a>
-        ))}
-        <div className="space-y-2">
-          <button className="w-full px-6 py-2 rounded-full text-blue-600 border border-blue-600 hover:bg-blue-50 transition-colors">
-            Login
-          </button>
-          <button className="w-full px-6 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 transition-opacity">
-            Register School
-          </button>
-        </div>
-      </div>
-    </div>
-  )}
-</nav>
-
-      {/* Hero Section */}
-      <section className="pt-24 md:pt-32 pb-12 md:pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-block mb-4 md:mb-6"
-          >
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
-              <Sparkles className="w-4 h-4 mr-1" />
-              Trusted by 500+ Schools
-            </span>
-          </motion.div>
-
-          <motion.h1
-            className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            Unlock Your Students'
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 mt-2">
-              Full Potential
-            </span>
-          </motion.h1>
-
-          <motion.p
-            className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            Transform your school with AI-powered psychometric assessments that provide deep insights into each student's unique learning style.
-          </motion.p>
-
-          <motion.div
-            className="flex flex-col sm:flex-row justify-center gap-3 mb-8 md:mb-12"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              className="px-6 py-3 md:px-8 md:py-4 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-base md:text-lg font-medium hover:opacity-90 shadow-lg flex items-center justify-center gap-2 w-full sm:w-auto"
-            >
-              Start Free Trial
-              <ArrowRight className="w-5 h-5" />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              className="px-6 py-3 md:px-8 md:py-4 rounded-full border-2 border-blue-600 text-blue-600 text-base md:text-lg font-medium hover:bg-blue-50 flex items-center justify-center gap-2 w-full sm:w-auto"
-            >
-              <GraduationCap className="w-5 h-5" />
-              Watch Demo
-            </motion.button>
-          </motion.div>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="p-4 rounded-xl bg-white/50 backdrop-blur-sm shadow-lg"
-              >
-                <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
-                  {stat.value}
-                </div>
-                <div className="text-sm md:text-base text-gray-600">
-                  {stat.label}
-                </div>
-              </motion.div>
+    <div className="ng">
+      {/* ===== NAV ===== */}
+      <div style={{ borderBottom: '1px solid var(--border-c)', position: 'sticky', top: 0, zIndex: 20, background: 'color-mix(in srgb, var(--canvas) 88%, transparent)', backdropFilter: 'blur(8px)' }}>
+        <div style={{ ...wrap, padding: '18px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--tint)', color: 'var(--pri)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><BrandMark /></span>
+            <span style={{ fontSize: 19, fontWeight: 600, fontFamily: 'var(--font-head)', letterSpacing: '-0.01em', color: 'var(--ink)' }}>NeuroGauge</span>
+          </div>
+          <div className="ng-nav-center">
+            {['Features', 'How it works', 'For schools', 'Testimonials'].map((l) => (
+              <a key={l} href="#" className="ng-link" style={{ fontSize: 14, color: 'var(--muted)', textDecoration: 'none' }}>{l}</a>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-16 md:py-20 bg-gradient-to-b from-blue-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Advanced Features</h2>
-            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-              Empower your institution with cutting-edge psychometric tools
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                whileHover={{ y: -5 }}
-                className="p-6 rounded-xl bg-white shadow-lg hover:shadow-xl transition-all"
-              >
-                <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mb-4">
-                  {React.cloneElement(feature.icon, { className: "w-6 h-6" })}
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
-              </motion.div>
-            ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <button onClick={() => router.push('/auth/signin')} style={{ background: 'transparent', border: 'none', color: 'var(--ink)', fontSize: 14, padding: '9px 12px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Sign in</button>
+            <button onClick={() => router.push('/auth/signup')} className="ng-btn-primary" style={{ background: 'var(--pri)', color: '#fff', border: 'none', padding: '9px 16px', borderRadius: 'var(--rad-btn)', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Register your school</button>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Testimonials Section */}
-      <section className="py-16 md:py-20 bg-gradient-to-b from-white to-indigo-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">What Educators Say</h2>
-            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-              Join hundreds of schools transforming student development
+      {/* ===== HERO ===== */}
+      <div style={{ ...wrap, padding: '66px 40px 40px' }}>
+        <div className="ng-hero-grid">
+          <div style={{ animation: 'ng-fade-up .5s ease-out both' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--tint)', color: 'var(--pri)', fontSize: 13, fontWeight: 500, padding: '6px 12px', borderRadius: 999 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z" /></svg>
+              Trusted by 500+ schools
+            </span>
+            <h1 style={{ fontFamily: 'var(--font-head)', fontSize: 47, lineHeight: 1.07, fontWeight: 'var(--w-head)' as any, letterSpacing: 'var(--letter-head)', color: 'var(--ink)', margin: '20px 0 0' }}>
+              See how every student <span style={{ color: 'var(--pri)' }}>really learns.</span>
+            </h1>
+            <p style={{ fontSize: 17, lineHeight: 1.62, color: 'var(--muted)', margin: '20px 0 0', maxWidth: '31em' }}>
+              NeuroGauge turns a 20-minute adaptive assessment into a clear, science-backed profile — cognitive strengths, learning style and the careers that fit.
             </p>
-          </div>
-
-          <div className="relative">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTestimonial}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="max-w-3xl mx-auto"
-              >
-                <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 relative">
-                  <div className="absolute -top-4 left-8 w-8 h-8 bg-blue-500 rotate-45" />
-                  <div className="flex flex-col md:flex-row items-center mb-4 md:mb-6">
-                    <img
-                      src={testimonials[activeTestimonial].image}
-                      alt={testimonials[activeTestimonial].name}
-                      className="w-16 h-16 rounded-full object-cover mb-4 md:mb-0 md:mr-4"
-                    />
-                    <div className="text-center md:text-left">
-                      <h4 className="text-xl font-semibold">{testimonials[activeTestimonial].name}</h4>
-                      <p className="text-gray-600">{testimonials[activeTestimonial].role}</p>
-                    </div>
-                  </div>
-                  <p className="text-lg text-gray-700 italic">
-                    "{testimonials[activeTestimonial].quote}"
-                  </p>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-
-            <div className="flex justify-center mt-8 space-x-2">
-              {testimonials.map((_, index) => (
-                <motion.button
-                  key={index}
-                  className={`w-3 h-3 rounded-full ${
-                    index === activeTestimonial ? 'bg-blue-600' : 'bg-blue-200'
-                  }`}
-                  onClick={() => setActiveTestimonial(index)}
-                  whileHover={{ scale: 1.2 }}
-                />
-              ))}
+            <div style={{ display: 'flex', gap: 12, marginTop: 28, flexWrap: 'wrap' }}>
+              <button onClick={() => router.push('/auth/signup')} className="ng-btn-primary" style={{ background: 'var(--pri)', color: '#fff', border: 'none', padding: '12px 20px', borderRadius: 'var(--rad-btn)', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                Get started
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+              </button>
+              <button onClick={() => router.push('/auth/signin')} className="ng-btn-soft" style={{ background: 'var(--surface)', border: '1px solid var(--border-c)', color: 'var(--ink)', padding: '12px 20px', borderRadius: 'var(--rad-btn)', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>See a sample report</button>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* CTA Section */}
-      <section className="py-16 md:py-20 bg-gradient-to-b from-indigo-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl md:rounded-3xl p-8 md:p-12 text-center text-white relative overflow-hidden"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6">
-              Ready to Transform Your School?
-            </h2>
-            <p className="text-lg md:text-xl mb-6 md:mb-8 max-w-2xl mx-auto">
-              Join over 500 schools using NeuroGauge to unlock student potential
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              className="px-8 py-4 bg-white text-blue-600 rounded-full text-lg font-medium hover:bg-blue-50 transition-colors"
-            >
-              Start Free Trial Now
-            </motion.button>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <Brain className="w-6 h-6 text-blue-600" />
-                <span className="text-xl font-bold">NeuroGauge</span>
+          {/* product-preview report card */}
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div style={{ ...cardBase, boxShadow: 'var(--shadow-hover)', padding: 20, width: 380, maxWidth: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: 'var(--tint)', color: 'var(--pri)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 15, fontFamily: 'var(--font-head)' }}>AM</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)', fontFamily: 'var(--font-head)' }}>Aanya Mehra</div>
+                  <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>Grade 10 · Cognitive profile</div>
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--d1)', background: 'color-mix(in srgb, var(--d1) 13%, transparent)', padding: '4px 9px', borderRadius: 999 }}>Ready</span>
               </div>
-              <p className="text-gray-600">
-                Empowering education through advanced psychometric analysis
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Product</h3>
-              <ul className="space-y-2">
-                {['Features', 'Pricing', 'Documentation', 'Guides'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
-                      {item}
-                    </a>
-                  </li>
+              <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center' }}>
+                <svg width="220" height="205" viewBox="0 0 220 205">
+                  <polygon points="110,27 184.2,80.9 155.9,168.1 64.1,168.1 35.8,80.9" fill="none" stroke="var(--border-c)" strokeWidth="1" />
+                  <polygon points="110,53.5 159,89.1 140.3,146.7 79.7,146.7 61,89.1" fill="none" stroke="var(--border-c)" strokeWidth="1" />
+                  <polygon points="110,79.3 134.4,97.1 125.1,125.8 94.9,125.8 85.6,97.1" fill="none" stroke="var(--border-c)" strokeWidth="1" />
+                  <line x1="110" y1="105" x2="110" y2="27" stroke="var(--border-c)" />
+                  <line x1="110" y1="105" x2="184.2" y2="80.9" stroke="var(--border-c)" />
+                  <line x1="110" y1="105" x2="155.9" y2="168.1" stroke="var(--border-c)" />
+                  <line x1="110" y1="105" x2="64.1" y2="168.1" stroke="var(--border-c)" />
+                  <line x1="110" y1="105" x2="35.8" y2="80.9" stroke="var(--border-c)" />
+                  <polygon points="110,33.2 160.4,88.6 149,158.6 82.5,142.9 52.2,86.2" fill="var(--pri)" fillOpacity="0.15" stroke="var(--pri)" strokeWidth="2" strokeLinejoin="round" />
+                  {[[110, 33.2], [160.4, 88.6], [149, 158.6], [82.5, 142.9], [52.2, 86.2]].map(([cx, cy], i) => <circle key={i} cx={cx} cy={cy} r="3" fill="var(--pri)" />)}
+                  <text x="110" y="18" textAnchor="middle" fontSize="10.5" fill="var(--muted)">Logic</text>
+                  <text x="192" y="82" textAnchor="start" fontSize="10.5" fill="var(--muted)">Verbal</text>
+                  <text x="156" y="185" textAnchor="middle" fontSize="10.5" fill="var(--muted)">Spatial</text>
+                  <text x="64" y="185" textAnchor="middle" fontSize="10.5" fill="var(--muted)">Memory</text>
+                  <text x="28" y="82" textAnchor="end" fontSize="10.5" fill="var(--muted)">Focus</text>
+                </svg>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                {[['Visual', 82, 'var(--d1)'], ['Auditory', 64, 'var(--d5)'], ['Kinesthetic', 48, 'var(--d2)']].map(([label, val, color]) => (
+                  <div key={label as string} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ width: 78, fontSize: 12, color: 'var(--muted)' }}>{label}</span>
+                    <div style={{ flex: 1, height: 7, borderRadius: 999, background: 'var(--border-c)', overflow: 'hidden' }}><div style={{ width: `${val}%`, height: '100%', background: color as string, borderRadius: 999 }} /></div>
+                    <span style={{ width: 26, textAlign: 'right', fontSize: 11.5, color: 'var(--muted)' }}>{val}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
+              <div style={{ marginTop: 16 }}>
+                <div style={{ fontSize: 11, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 8 }}>Best-fit careers</div>
+                <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
+                  {['UX Design', 'Data Science', 'Psychology'].map((c) => (
+                    <span key={c} style={{ background: 'var(--tint)', color: 'var(--pri)', fontSize: 12, fontWeight: 500, padding: '5px 11px', borderRadius: 999 }}>{c}</span>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold mb-4">Company</h3>
-              <ul className="space-y-2">
-                {['About', 'Blog', 'Careers', 'Contact'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Legal</h3>
-              <ul className="space-y-2">
-                {['Privacy', 'Terms', 'Security', 'Cookie Policy'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <div className="border-t mt-12 pt-8 text-center text-gray-600">
-            <p>© 2024 NeuroGauge. All rights reserved.</p>
           </div>
         </div>
-      </footer>
+      </div>
+
+      {/* ===== STATS ===== */}
+      <div style={{ ...wrap, padding: '8px 40px 44px' }}>
+        <div className="ng-grid-4">
+          {[['500+', 'Schools enrolled'], ['100k+', 'Students assessed'], ['95%', 'Counselor satisfaction'], ['30%', 'Better course-fit']].map(([n, l]) => (
+            <div key={l} style={{ ...cardBase, padding: 20 }}>
+              <div style={{ fontSize: 29, fontWeight: 600, fontFamily: 'var(--font-head)', letterSpacing: '-0.02em', color: 'var(--ink)' }}>{n}</div>
+              <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 3 }}>{l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ===== FEATURES ===== */}
+      <div style={{ ...wrap, padding: '60px 40px' }}>
+        {sectionKicker('01 · Features')}
+        <h2 style={{ ...h2, maxWidth: '16em' }}>Rigorous science, made genuinely readable.</h2>
+        <div className="ng-grid-3" style={{ marginTop: 36 }}>
+          {features.map((f) => (
+            <div key={f.title} className="ng-lift" style={{ ...cardBase, padding: 24 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--tint)', color: 'var(--pri)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{f.icon}</div>
+              <h3 style={{ fontFamily: 'var(--font-head)', fontSize: 18, fontWeight: 600, color: 'var(--ink)', margin: '16px 0 0' }}>{f.title}</h3>
+              <p style={{ fontSize: 14.5, lineHeight: 1.6, color: 'var(--muted)', margin: '8px 0 0' }}>{f.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ===== BUILT FOR EVERYONE ===== */}
+      <div style={{ background: 'var(--tint)' }}>
+        <div style={{ ...wrap, padding: '60px 40px' }}>
+          {sectionKicker('02 · Built for everyone')}
+          <h2 style={h2}>One assessment, four points of view.</h2>
+          <div className="ng-grid-4" style={{ marginTop: 32 }}>
+            {roles.map((r) => (
+              <div key={r.title} style={{ ...cardBase, padding: 20 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: r.accent ? 'color-mix(in srgb, var(--accent) 15%, transparent)' : 'var(--tint)', color: r.accent ? 'var(--accent)' : 'var(--pri)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{r.icon}</svg>
+                </div>
+                <h3 style={{ fontFamily: 'var(--font-head)', fontSize: 16, fontWeight: 600, color: 'var(--ink)', margin: '14px 0 0' }}>{r.title}</h3>
+                <p style={{ fontSize: 13.5, lineHeight: 1.55, color: 'var(--muted)', margin: '6px 0 0' }}>{r.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ===== HOW IT WORKS ===== */}
+      <div style={{ ...wrap, padding: '60px 40px' }}>
+        {sectionKicker('03 · How it works')}
+        <h2 style={h2}>From assessment to guidance in three steps.</h2>
+        <div className="ng-grid-3" style={{ marginTop: 36, gap: 24 }}>
+          {steps.map((s) => (
+            <div key={s.n} style={{ borderTop: '2px solid var(--pri)', paddingTop: 18 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontFamily: 'var(--font-head)', fontSize: 34, fontWeight: 'var(--w-head)' as any, color: 'var(--pri)', letterSpacing: '-0.02em' }}>{s.n}</span>
+                <span style={{ color: 'var(--muted)' }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{s.icon}</svg></span>
+              </div>
+              <h3 style={{ margin: '14px 0 0', fontFamily: 'var(--font-head)', fontSize: 18, fontWeight: 600, color: 'var(--ink)' }}>{s.title}</h3>
+              <p style={{ fontSize: 14.5, color: 'var(--muted)', lineHeight: 1.6, margin: '6px 0 0' }}>{s.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ===== TESTIMONIAL ===== */}
+      <div style={{ borderTop: '1px solid var(--border-c)', borderBottom: '1px solid var(--border-c)', background: 'var(--surface)' }}>
+        <div style={{ maxWidth: 760, margin: '0 auto', padding: '66px 40px', textAlign: 'center' }}>
+          <div style={{ width: 36, height: 3, borderRadius: 2, background: 'var(--accent)', margin: '0 auto 14px' }} />
+          {sectionKicker('What educators say')}
+          <div style={{ minHeight: 210, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <blockquote style={{ margin: 0 }}>
+              <p style={{ fontFamily: 'var(--font-head)', fontSize: 24, lineHeight: 1.4, fontWeight: 'var(--w-head)' as any, color: 'var(--ink)', letterSpacing: 'var(--letter-head)', margin: 0 }}>{t.quote}</p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 24 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 999, background: 'var(--tint)', color: 'var(--pri)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontFamily: 'var(--font-head)' }}>{t.initials}</div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>{t.name}</div>
+                  <div style={{ fontSize: 13, color: 'var(--muted)' }}>{t.role}</div>
+                </div>
+              </div>
+            </blockquote>
+          </div>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 8 }}>
+            {testimonials.map((_, i) => (
+              <button key={i} aria-label={`Testimonial ${i + 1}`} onClick={() => setActive(i)} style={{ height: 8, width: active === i ? 24 : 8, borderRadius: 999, border: 'none', padding: 0, cursor: 'pointer', background: active === i ? 'var(--pri)' : 'var(--border-c)', transition: 'all .2s ease' }} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ===== CLOSING CTA ===== */}
+      <div style={{ ...wrap, padding: '64px 40px' }}>
+        <div style={{ background: 'var(--pri)', borderRadius: 'calc(var(--rad-card) + 6px)', padding: '56px 40px', textAlign: 'center' }}>
+          <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 32, fontWeight: 'var(--w-head)' as any, letterSpacing: 'var(--letter-head)', color: '#fff', margin: 0 }}>Ready to understand every learner?</h2>
+          <p style={{ fontSize: 16, lineHeight: 1.6, color: 'rgba(255,255,255,.85)', margin: '12px auto 0', maxWidth: '34em' }}>Join 500+ schools using NeuroGauge to turn assessments into guidance students actually feel.</p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 26, flexWrap: 'wrap' }}>
+            <button onClick={() => router.push('/auth/signup')} style={{ background: '#fff', color: 'var(--pri)', border: 'none', padding: '12px 22px', borderRadius: 'var(--rad-btn)', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Register your school</button>
+            <button onClick={() => router.push('/auth/signin')} style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,.45)', padding: '12px 22px', borderRadius: 'var(--rad-btn)', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>See a sample report</button>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== FOOTER ===== */}
+      <div style={{ borderTop: '1px solid var(--border-c)' }}>
+        <div className="ng-foot-grid" style={{ ...wrap, padding: '48px 40px' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ width: 30, height: 30, borderRadius: 9, background: 'var(--tint)', color: 'var(--pri)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><BrandMark size={18} /></span>
+              <span style={{ fontSize: 17, fontWeight: 600, fontFamily: 'var(--font-head)', color: 'var(--ink)' }}>NeuroGauge</span>
+            </div>
+            <p style={{ fontSize: 13.5, lineHeight: 1.6, color: 'var(--muted)', margin: '14px 0 0', maxWidth: '26em' }}>Understand how every learner thinks, learns and grows.</p>
+          </div>
+          {[['Product', ['Features', 'Pricing', 'Sample report', 'Security']], ['Company', ['About', 'Blog', 'Careers', 'Contact']], ['Legal', ['Privacy', 'Terms', 'Cookie policy']]].map(([title, links]) => (
+            <div key={title as string}>
+              <div style={{ fontSize: 12, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--ink)', fontWeight: 600, marginBottom: 14 }}>{title}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                {(links as string[]).map((l) => <a key={l} href="#" className="ng-link" style={{ fontSize: 13.5, color: 'var(--muted)', textDecoration: 'none' }}>{l}</a>)}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ borderTop: '1px solid var(--border-c)' }}>
+          <div style={{ ...wrap, padding: '18px 40px', fontSize: 12.5, color: 'var(--muted)' }}>© 2026 NeuroGauge. All rights reserved.</div>
+        </div>
+      </div>
     </div>
   );
-};
-
-export default LandingPage;
+}

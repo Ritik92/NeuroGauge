@@ -10,7 +10,7 @@ import { useSession } from 'next-auth/react';
 const careerIconMap = {
   STEM: <Microscope className="w-5 h-5 text-purple-600" />,
   Arts: <Palette className="w-5 h-5 text-red-600" />,
-  Business: <Briefcase className="w-5 h-5 text-blue-600" />,
+  Business: <Briefcase className="w-5 h-5 text-teal-600" />,
   Technology: <Code2 className="w-5 h-5 text-green-600" />,
   Education: <GraduationCap className="w-5 h-5 text-yellow-600" />,
   Engineering: <Rocket className="w-5 h-5 text-orange-600" />
@@ -118,24 +118,24 @@ const ReportInterface =  ({ demoData ,student}) => {
               ease: "linear" 
             }}
           >
-            <Brain className="w-8 h-8 text-blue-600" />
+            <Brain className="w-8 h-8 text-teal-600" />
           </motion.div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-teal-800 bg-clip-text text-transparent">
             Cognitive Assessment
           </h1>
         </div>
         
         <div className="flex flex-wrap justify-center gap-2">
-          <Badge variant="secondary" className="bg-blue-50 text-blue-700 px-3 py-1">
+          <Badge variant="secondary" className="bg-teal-50 text-teal-700 px-3 py-1">
             {student?.firstName}
           </Badge>
-          <Badge variant="secondary" className="bg-blue-50 text-blue-700 px-3 py-1">
+          <Badge variant="secondary" className="bg-teal-50 text-teal-700 px-3 py-1">
            Grade  {student?.grade}
           </Badge>
-          <Badge variant="secondary" className="bg-blue-50 text-blue-700 px-3 py-1">
+          <Badge variant="secondary" className="bg-teal-50 text-teal-700 px-3 py-1">
             {demoData.studentInfo.personalityType}
           </Badge>
-          <Badge variant="secondary" className="bg-blue-50 text-blue-700 px-3 py-1">
+          <Badge variant="secondary" className="bg-teal-50 text-teal-700 px-3 py-1">
             {new Date(demoData.studentInfo?.assessmentDate).toLocaleDateString()}
           </Badge>
         </div>
@@ -147,9 +147,9 @@ const ReportInterface =  ({ demoData ,student}) => {
       />
 
       {/* Cognitive Profile Section */}
-      <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+      <Card className="border border-teal-200 shadow-sm hover:shadow-md transition-shadow">
         <CardHeader>
-          <CardTitle className="text-xl text-blue-700">
+          <CardTitle className="text-xl text-teal-700">
             Cognitive Profile
           </CardTitle>
           <CardDescription>
@@ -169,16 +169,16 @@ const ReportInterface =  ({ demoData ,student}) => {
                 <span className="text-sm font-medium text-gray-700 capitalize">
                   {key.replace(/([A-Z])/g, ' $1').trim()}
                 </span>
-                {/* <span className="text-sm font-semibold text-blue-600">
+                {/* <span className="text-sm font-semibold text-teal-600">
                   {value}%
                 </span> */}
               </div>
-              <div className="w-full h-2 bg-blue-50 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-teal-50 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${value}%` }}
                   transition={{ duration: shouldReduceMotion ? 0 : 1 }}
-                  className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
+                  className="h-full bg-gradient-to-r from-teal-500 to-teal-600 rounded-full"
                 />
               </div>
             </motion.div>
@@ -188,19 +188,19 @@ const ReportInterface =  ({ demoData ,student}) => {
 
       {/* Learning Style & Strengths */}
       <div className="grid md:grid-cols-2 gap-6">
-        <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+        <Card className="border border-teal-200 shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Star className="w-5 h-5 text-blue-600" />
+              <Star className="w-5 h-5 text-teal-600" />
               Learning Style
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <p className="font-medium text-blue-700">
+            <div className="p-4 bg-teal-50 rounded-lg">
+              <p className="font-medium text-teal-700">
                 Primary: {demoData?.learningStyle?.primary}
               </p>
-              <p className="text-sm text-blue-600 mt-1">
+              <p className="text-sm text-teal-600 mt-1">
                 Secondary: {demoData?.learningStyle?.secondary}
               </p>
             </div>
@@ -213,7 +213,7 @@ const ReportInterface =  ({ demoData ,student}) => {
                   transition={{ delay: shouldReduceMotion ? 0 : index * 0.1 }}
                   className="flex items-start gap-3"
                 >
-                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2" />
+                  <div className="w-1.5 h-1.5 bg-teal-600 rounded-full mt-2" />
                   <span className="text-sm text-gray-600 leading-relaxed">
                     {char}
                   </span>
@@ -223,10 +223,10 @@ const ReportInterface =  ({ demoData ,student}) => {
           </CardContent>
         </Card>
 
-        <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+        <Card className="border border-teal-200 shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <TrendingUp className="w-5 h-5 text-blue-600" />
+              <TrendingUp className="w-5 h-5 text-teal-600" />
               Key Strengths
             </CardTitle>
           </CardHeader>
@@ -238,13 +238,13 @@ const ReportInterface =  ({ demoData ,student}) => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: shouldReduceMotion ? 0 : index * 0.1 }}
-                  className="p-4 bg-blue-50 rounded-lg space-y-2 hover:bg-blue-100/50 transition-colors"
+                  className="p-4 bg-teal-50 rounded-lg space-y-2 hover:bg-teal-100/50 transition-colors"
                 >
                   <div className="flex justify-between items-center gap-2">
-                    <span className="font-medium text-blue-700">
+                    <span className="font-medium text-teal-700">
                       {strength.title}
                     </span>
-                    <Badge className="bg-blue-100 text-blue-700">
+                    <Badge className="bg-teal-100 text-teal-700">
                       {strength.score}%
                     </Badge>
                   </div>
@@ -259,10 +259,10 @@ const ReportInterface =  ({ demoData ,student}) => {
       </div>
 
       {/* Recommendations */}
-      <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+      <Card className="border border-teal-200 shadow-sm hover:shadow-md transition-shadow">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <MessageCircle className="w-5 h-5 text-blue-600" />
+            <MessageCircle className="w-5 h-5 text-teal-600" />
             Personalized Recommendations
           </CardTitle>
         </CardHeader>
@@ -274,14 +274,14 @@ const ReportInterface =  ({ demoData ,student}) => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: shouldReduceMotion ? 0 : index * 0.1 }}
-                className="p-4 border border-blue-100 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all"
+                className="p-4 border border-teal-100 rounded-lg hover:border-teal-300 hover:shadow-sm transition-all"
               >
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-50 rounded-lg">
+                  <div className="p-2 bg-teal-50 rounded-lg">
                     {iconMap[rec.icon] || <Book className="w-5 h-5" />}
                   </div>
                   <div>
-                    <h4 className="font-medium text-blue-700">
+                    <h4 className="font-medium text-teal-700">
                       {rec.title}
                     </h4>
                     <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">
@@ -296,10 +296,10 @@ const ReportInterface =  ({ demoData ,student}) => {
       </Card>
 
       {/* Development Areas */}
-      <Card className="border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+      <Card className="border border-teal-200 shadow-sm hover:shadow-md transition-shadow">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <HeartPulse className="w-5 h-5 text-blue-600" />
+            <HeartPulse className="w-5 h-5 text-teal-600" />
             Development Areas
           </CardTitle>
         </CardHeader>
@@ -311,9 +311,9 @@ const ReportInterface =  ({ demoData ,student}) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: shouldReduceMotion ? 0 : index * 0.1 }}
-                className="p-4 bg-blue-50 rounded-lg hover:bg-blue-100/50 transition-colors text-center"
+                className="p-4 bg-teal-50 rounded-lg hover:bg-teal-100/50 transition-colors text-center"
               >
-                <h4 className="font-medium text-blue-700">
+                <h4 className="font-medium text-teal-700">
                   {area}
                 </h4>
                 <p className="text-sm text-gray-600 mt-2">

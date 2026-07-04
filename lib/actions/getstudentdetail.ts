@@ -1,6 +1,5 @@
 'use server'
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import prisma from '@/lib/prisma'
 export async function getStudentDetail(userId: string) {
     try {
         const student = await prisma.student.findUnique({

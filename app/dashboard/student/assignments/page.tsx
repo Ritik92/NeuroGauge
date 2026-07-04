@@ -1,17 +1,15 @@
 // app/student/assignments/page.tsx
+import prisma from '@/lib/prisma'
 import { getServerSession } from "next-auth/next"
 import { redirect } from "next/navigation"
 import { AssignmentList } from "@/components/student/AssignmentList"
-import { PrismaClient } from '@prisma/client'
 import { authOptions } from "@/auth.config"
-
-const prisma = new PrismaClient()
 
 export default async function AssignmentsPage() {
   const session = await getServerSession(authOptions)
-  
+
   if (!session?.user?.id) {
-    redirect('/login')
+    redirect('/auth/signin')
   }
 
   const student = await prisma.student.findUnique({
@@ -21,9 +19,7 @@ export default async function AssignmentsPage() {
 
   if (!student) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="text-gray-500 text-lg">Student record not found</div>
-      </div>
+      <div style={{ color: 'var(--muted)', fontSize: 15, padding: 8 }}>Student record not found</div>
     )
   }
 
@@ -48,17 +44,12 @@ export default async function AssignmentsPage() {
   }))
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-          My Assignments
-        </h1>
-        <p className="text-gray-600 mt-2">
-          Complete your assessments to unlock personalized insights
-        </p>
+    <div>
+      <h1 style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0 }}>Assignments</h1>
+      <p style={{ fontSize: 14, color: 'var(--muted)', margin: '6px 0 0' }}>Complete your assessments to unlock personalized insights.</p>
+      <div style={{ marginTop: 26 }}>
+        <AssignmentList assignments={assignmentsWithStatus as any} />
       </div>
-      
-      <AssignmentList assignments={assignmentsWithStatus} />
     </div>
   )
 }

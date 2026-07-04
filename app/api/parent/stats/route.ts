@@ -1,9 +1,7 @@
-import { PrismaClient } from '@prisma/client'
+import prisma from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { z } from 'zod'
-
-const prisma = new PrismaClient()
 
 // Type for assessment progress
 type AssessmentProgress = {

@@ -1,9 +1,8 @@
 // app/student/assignments/[id]/page.tsx
+import prisma from '@/lib/prisma'
 import { getServerSession } from "next-auth/next"
 import { redirect } from "next/navigation"
 import AssessmentForm from '../../../../../components/student/AssesementForm'
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
 export default async function TakeAssessmentPage({
   params
 }: any) {

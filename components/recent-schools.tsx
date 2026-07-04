@@ -1,86 +1,24 @@
 // components/recent-schools.tsx
 'use client';
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Search, FileBarChart, BarChart3, PieChart, TrendingUp, Brain, BookOpen, Lightbulb, PenTool } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import axios from 'axios';
 
-// Shared animations
-const containerAnimation = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
-};
-
-const itemAnimation = {
-  hidden: { y: 20, opacity: 0 },
-  show: { y: 0, opacity: 1 }
-};
-
-// Shared loading spinner
-const LoadingSpinner = ({ icon: Icon }) => (
-  <div className="flex justify-center items-center min-h-[400px]">
-    <motion.div
-      animate={{ rotate: 360 }}
-      transition={{
-        duration: 1,
-        repeat: Infinity,
-        ease: "linear"
-      }}
-      className="text-blue-600"
-    >
-      <Icon className="w-8 h-8" />
-    </motion.div>
-  </div>
+const Ico = ({ children, size = 20 }: { children: React.ReactNode; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">{children}</svg>
 );
 
-// Modern SearchBar component
-const SearchBar = ({ value, onChange, placeholder }) => (
-  <motion.div 
-    initial={{ opacity: 0, y: -20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="relative flex-1"
-  >
-    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-    <Input
-      placeholder={placeholder}
-      className="pl-10 border-blue-100 focus:border-blue-300 transition-colors"
-      value={value}
-      onChange={onChange}
-    />
-  </motion.div>
-);
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 16, padding: 22 };
 
-// RecentSchools Component
+interface School {
+  id: string;
+  name: string;
+  city: string;
+  state: string;
+  createdAt: string;
+}
+
 export const RecentSchools = () => {
-  const [schools, setSchools] = useState([]);
+  const [schools, setSchools] = useState<School[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -98,43 +36,40 @@ export const RecentSchools = () => {
     fetchSchools();
   }, []);
 
-  if (loading) return <LoadingSpinner icon={Brain} />;
+  if (loading) return <div style={{ color: 'var(--muted)', padding: 8 }}>Loading…</div>;
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
-        <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600">
-          <CardTitle className="text-white">Recently Added Schools</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-blue-50">
-                <TableHead>Name</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Created</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {schools.map((school) => (
-                <motion.tr
-                  key={school.id}
-                  whileHover={{ backgroundColor: 'rgba(59, 130, 246, 0.05)' }}
-                  className="cursor-pointer"
-                >
-                  <TableCell className="font-medium">{school.name}</TableCell>
-                  <TableCell>{school.city}, {school.state}</TableCell>
-                  <TableCell>{new Date(school.createdAt).toLocaleDateString()}</TableCell>
-                </motion.tr>
+    <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '18px 22px', borderBottom: '1px solid var(--border-c)' }}>
+        <span style={{ width: 34, height: 34, borderRadius: 9, background: 'var(--tint)', color: 'var(--pri)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Ico size={18}><path d="M3 21h18" /><path d="M5 21V8l7-4 7 4v13" /><path d="M9 21v-6h6v6" /></Ico>
+        </span>
+        <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--ink)', margin: 0 }}>Recently Added Schools</h2>
+      </div>
+
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
+          <thead>
+            <tr>
+              {['Name', 'Location', 'Created'].map((h) => (
+                <th key={h} style={{ textAlign: 'left', padding: '12px 22px', fontSize: 11.5, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.04em', background: 'var(--canvas)', borderBottom: '1px solid var(--border-c)' }}>{h}</th>
               ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </motion.div>
+            </tr>
+          </thead>
+          <tbody>
+            {schools.length === 0 && (
+              <tr><td colSpan={3} style={{ padding: '22px', color: 'var(--muted)' }}>No schools yet.</td></tr>
+            )}
+            {schools.map((school, i) => (
+              <tr key={school.id} style={{ borderBottom: i !== schools.length - 1 ? '1px solid var(--border-c)' : 'none' }}>
+                <td style={{ padding: '14px 22px', fontWeight: 600, color: 'var(--ink)' }}>{school.name}</td>
+                <td style={{ padding: '14px 22px', color: 'var(--muted)' }}>{school.city}, {school.state}</td>
+                <td style={{ padding: '14px 22px', color: 'var(--muted)' }}>{new Date(school.createdAt).toLocaleDateString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 };

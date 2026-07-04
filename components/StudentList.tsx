@@ -1,28 +1,8 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Users, GraduationCap, Search, UserPlus } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Users, GraduationCap } from 'lucide-react';
 import axios from 'axios';
-
 
 interface Student {
   id: string
@@ -31,6 +11,15 @@ interface Student {
   email: string
   grade: number
   dateOfBirth: string
+}
+
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 16, padding: 22 };
+const th: React.CSSProperties = { textAlign: 'left', fontSize: 11.5, fontWeight: 600, color: 'var(--muted)', padding: '11px 16px', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' };
+const td: React.CSSProperties = { fontSize: 13.5, color: 'var(--ink)', padding: '14px 16px' };
+const chipTeal: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: '#0E9384', background: 'color-mix(in srgb, #0E9384 13%, transparent)', padding: '4px 10px', borderRadius: 999, whiteSpace: 'nowrap' };
+
+function Bar({ w }: { w: number }) {
+  return <div style={{ height: 12, width: w, borderRadius: 6, background: 'color-mix(in srgb, var(--muted) 16%, transparent)', animation: 'ng-pulse 1.4s ease-in-out infinite' }} />;
 }
 
 export default function StudentsList() {
@@ -67,123 +56,87 @@ export default function StudentsList() {
   }, [userId, selectedGrade])
 
   if (!userId) {
-    return <div>No school assigned</div>
+    return <div style={{ fontSize: 14, color: 'var(--muted)', padding: 8 }}>No school assigned</div>
   }
 
   if (error) {
-    return <div className="text-red-500">{error}</div>
+    return <div style={{ fontSize: 14, color: '#C0453B', padding: 8 }}>{error}</div>
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-indigo-50 py-8 px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-6xl mx-auto"
-      >
-        <div className="bg-white/50 backdrop-blur-sm rounded-2xl shadow-xl p-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-2">
-                <Users className="h-8 w-8" />
-                Student Directory
-              </h1>
-              <p className="text-gray-600 mt-2">Manage and view all student records</p>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                {/* <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input 
-                    placeholder="Search students..." 
-                    className="pl-10 rounded-full bg-white/80 border-gray-200 hover:border-blue-300 transition-colors"
-                  />
-                </div> */}
-              
-              <Select value={selectedGrade} onValueChange={setSelectedGrade}>
-                <SelectTrigger className="w-[180px] rounded-full bg-white/80">
-                  <GraduationCap className="h-4 w-4 mr-2 text-blue-600" />
-                  <SelectValue placeholder="Filter by grade" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Grades</SelectItem>
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(grade => (
-                    <SelectItem key={grade} value={grade.toString()}>
-                      Grade {grade}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* <Button className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Add Student
-              </Button> */}
-            </div>
-          </div>
-
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-gradient-to-r from-blue-50 to-indigo-50">
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Grade</TableHead>
-                  <TableHead>Date of Birth</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  Array.from({ length: 5 }).map((_, index) => (
-                    <TableRow key={index}>
-                      <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-[200px]" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-[50px]" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-                    </TableRow>
-                  ))
-                ) : students.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8">
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex flex-col items-center gap-2 text-gray-500"
-                      >
-                        <Users className="h-8 w-8" />
-                        <p>No students found</p>
-                      </motion.div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  <AnimatePresence>
-                    {students.map((student, index) => (
-                      <motion.tr
-                        key={student.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="hover:bg-blue-50/50 cursor-pointer transition-colors"
-                      >
-                        <TableCell className="font-medium">{student.firstName} {student.lastName}</TableCell>
-                        <TableCell>{student.email}</TableCell>
-                        <TableCell>
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-sm bg-blue-100 text-blue-700">
-                            <GraduationCap className="h-3 w-3" />
-                            Grade {student.grade}
-                          </span>
-                        </TableCell>
-                        <TableCell>{student.dateOfBirth}</TableCell>
-                      </motion.tr>
-                    ))}
-                  </AnimatePresence>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+    <div>
+      {/* header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0 }}>Student directory</h1>
+          <p style={{ fontSize: 14, color: 'var(--muted)', margin: '6px 0 0' }}>Manage and view all student records</p>
         </div>
-      </motion.div>
+
+        <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 42, padding: '0 14px', background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 10, color: 'var(--ink)' }}>
+          <GraduationCap size={16} style={{ color: 'var(--pri)' }} />
+          <select
+            value={selectedGrade}
+            onChange={(e) => setSelectedGrade(e.target.value)}
+            style={{ appearance: 'none', border: 'none', background: 'transparent', color: 'var(--ink)', fontSize: 13.5, fontWeight: 500, cursor: 'pointer', outline: 'none', fontFamily: 'inherit' }}
+          >
+            <option value="all">All grades</option>
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(grade => (
+              <option key={grade} value={grade.toString()}>Grade {grade}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {/* table card */}
+      <div style={{ ...card, padding: 0, overflow: 'hidden', marginTop: 24 }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: 'var(--canvas)', borderBottom: '1px solid var(--border-c)' }}>
+                <th style={th}>Name</th>
+                <th style={th}>Email</th>
+                <th style={th}>Grade</th>
+                <th style={th}>Date of Birth</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, index) => (
+                  <tr key={index} style={{ borderTop: index !== 0 ? '1px solid var(--border-c)' : 'none' }}>
+                    <td style={td}><Bar w={120} /></td>
+                    <td style={td}><Bar w={200} /></td>
+                    <td style={td}><Bar w={50} /></td>
+                    <td style={td}><Bar w={100} /></td>
+                  </tr>
+                ))
+              ) : students.length === 0 ? (
+                <tr>
+                  <td colSpan={4} style={{ padding: '40px 16px', textAlign: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: 'var(--muted)' }}>
+                      <Users size={30} />
+                      <p style={{ fontSize: 14, margin: 0 }}>No students found</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                students.map((student, index) => (
+                  <tr key={student.id} style={{ borderTop: '1px solid var(--border-c)' }}>
+                    <td style={{ ...td, fontWeight: 600 }}>{student.firstName} {student.lastName}</td>
+                    <td style={{ ...td, color: 'var(--muted)' }}>{student.email}</td>
+                    <td style={td}>
+                      <span style={chipTeal}>
+                        <GraduationCap size={13} />
+                        Grade {student.grade}
+                      </span>
+                    </td>
+                    <td style={{ ...td, color: 'var(--muted)' }}>{student.dateOfBirth}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   )
 }

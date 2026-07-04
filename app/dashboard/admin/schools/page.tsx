@@ -1,18 +1,14 @@
 'use client';
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Building2, Search, MapPin, Phone, Mail, User } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
+const Ico = ({ children, size = 20 }: { children: React.ReactNode; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">{children}</svg>
+);
+
+const tint = (c: string) => `color-mix(in srgb, ${c} 13%, transparent)`;
+const chip = (fg: string): React.CSSProperties => ({ fontSize: 11.5, fontWeight: 600, color: fg, background: `color-mix(in srgb, ${fg} 13%, transparent)`, padding: '4px 10px', borderRadius: 999, whiteSpace: 'nowrap' });
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 16, padding: 22 };
+const inputStyle: React.CSSProperties = { height: 40, padding: '0 14px', background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 10, fontSize: 14, color: 'var(--ink)', outline: 'none' };
 
 interface School {
   id: string;
@@ -25,8 +21,8 @@ interface School {
   adminLastName: string;
   email: string;
   phone: string;
-  user:{
-    email:string;
+  user: {
+    email: string;
   }
 }
 
@@ -67,148 +63,82 @@ export default function SchoolsPage() {
 
   const states = [...new Set(schools.map(school => school.state))];
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const item = {
-    hidden: { y: 20, opacity: 0 },
-    show: { y: 0, opacity: 1 }
-  };
-
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-blue-50 via-white to-indigo-50">
-        <motion.div
-          animate={{
-            rotate: 360
-          }}
-          transition={{
-            duration: 1,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        >
-          <Building2 className="w-8 h-8 text-blue-600" />
-        </motion.div>
-      </div>
-    );
+    return <div style={{ color: 'var(--muted)', padding: 8 }}>Loading…</div>;
   }
 
   return (
-    <div className="min-h-screen ">
-      <div className="container mx-auto py-8 px-4">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Schools Directory
-          </h1>
-          
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search schools by name or city..."
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            
-            <Select value={stateFilter} onValueChange={setStateFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Filter by state" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All States</SelectItem>
-                {states.map((state) => (
-                  <SelectItem key={state} value={state}>{state}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+    <div>
+      <h1 style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0 }}>Schools Directory</h1>
+      <p style={{ fontSize: 14, color: 'var(--muted)', margin: '6px 0 0' }}>Browse and search every registered school on the platform.</p>
 
-          {filteredSchools.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-12"
-            >
-              <p className="text-gray-500 text-lg">No schools found matching your criteria</p>
-            </motion.div>
-          ) : (
-            <motion.div
-              variants={container}
-              initial="hidden"
-              animate="show"
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            >
-              {filteredSchools.map((school) => (
-                <motion.div 
-                  key={school.id} 
-                  variants={item}
-                  whileHover={{ y: -5 }}
-                  className="h-full"
-                >
-                  <Card className="h-full hover:shadow-lg transition-all duration-300">
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <Badge variant="outline">
-                          {school.type}
-                        </Badge>
-                        <Badge variant="secondary">
-                          {school.studentCount} Students
-                        </Badge>
-                      </div>
-                      <CardTitle className="mt-2 text-xl">{school.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <MapPin className="w-4 h-4" />
-                          <span>{school.city}, {school.state}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <User className="w-4 h-4" />
-                          <span>{school.adminFirstName} {school.adminLastName}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Mail className="w-4 h-4" />
-                          <a 
-                            href={`mailto:${school.user.email}`}
-                            className="hover:text-blue-600 transition-colors"
-                          >
-                            {school.user.email}
-                          </a>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Phone className="w-4 h-4" />
-                          <a 
-                            href={`tel:${school.phone}`}
-                            className="hover:text-blue-600 transition-colors"
-                          >
-                            {school.phone}
-                          </a>
-                        </div>
-                        
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </motion.div>
+      <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: 240 }}>
+          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', display: 'flex' }}>
+            <Ico size={16}><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></Ico>
+          </span>
+          <input
+            className="ng-input"
+            placeholder="Search schools by name or city..."
+            style={{ ...inputStyle, width: '100%', paddingLeft: 38 }}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <select
+          className="ng-input"
+          value={stateFilter}
+          onChange={(e) => setStateFilter(e.target.value)}
+          style={{ ...inputStyle, width: 180, cursor: 'pointer' }}
+        >
+          <option value="ALL">All States</option>
+          {states.map((state) => (
+            <option key={state} value={state}>{state}</option>
+          ))}
+        </select>
       </div>
+
+      {filteredSchools.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--muted)', fontSize: 14 }}>
+          No schools found matching your criteria
+        </div>
+      ) : (
+        <div className="ng-grid-3" style={{ marginTop: 20 }}>
+          {filteredSchools.map((school) => (
+            <div key={school.id} style={{ ...card, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <span style={chip('#0E9384')}>{school.type}</span>
+                <span style={chip('#3E9AE0')}>{school.studentCount} Students</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
+                <span style={{ width: 40, height: 40, flex: '0 0 auto', borderRadius: 11, background: 'var(--tint)', color: 'var(--pri)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Ico size={20}><path d="M3 21h18" /><path d="M5 21V8l7-4 7 4v13" /><path d="M9 21v-6h6v6" /></Ico>
+                </span>
+                <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--ink)', letterSpacing: '-0.01em' }}>{school.name}</div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 18 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, color: 'var(--muted)' }}>
+                  <Ico size={16}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></Ico>
+                  <span>{school.city}, {school.state}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, color: 'var(--muted)' }}>
+                  <Ico size={16}><path d="M20 21v-2a4 4 0 0 0-3-3.87" /><path d="M4 21v-2a4 4 0 0 1 3-3.87" /><circle cx="12" cy="7" r="4" /></Ico>
+                  <span>{school.adminFirstName} {school.adminLastName}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, color: 'var(--muted)' }}>
+                  <Ico size={16}><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-10 5L2 7" /></Ico>
+                  <a href={`mailto:${school.user.email}`} style={{ color: 'var(--muted)', textDecoration: 'none' }} className="ng-link">{school.user.email}</a>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, color: 'var(--muted)' }}>
+                  <Ico size={16}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z" /></Ico>
+                  <a href={`tel:${school.phone}`} style={{ color: 'var(--muted)', textDecoration: 'none' }} className="ng-link">{school.phone}</a>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

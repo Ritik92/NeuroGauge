@@ -1,9 +1,5 @@
 'use client'
 
-import { motion } from "framer-motion"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Clock, ArrowRight, CheckCircle2 } from "lucide-react"
 import Link from "next/link"
 
 interface Assignment {
@@ -15,101 +11,42 @@ interface Assignment {
   completed?: boolean
 }
 
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-}
+const Ico = ({ children, size = 22 }: { children: React.ReactNode; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">{children}</svg>
+)
 
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
+const typeMeta: Record<Assignment['type'], { label: string; color: string; icon: React.ReactNode }> = {
+  PERSONALITY: { label: 'Personality', color: '#9B5DE5', icon: <><path d="M12 5a3 3 0 0 0-6 .2 3 3 0 0 0-1.7 5.2A2.8 2.8 0 0 0 6 16a3 3 0 0 0 6 .5z" /><path d="M12 5a3 3 0 0 1 6 .2 3 3 0 0 1 1.7 5.2A2.8 2.8 0 0 1 18 16a3 3 0 0 1-6 .5z" /></> },
+  APTITUDE: { label: 'Aptitude', color: '#0E9384', icon: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1.5" fill="currentColor" /></> },
+  INTEREST: { label: 'Interest', color: '#F1785F', icon: <path d="M12 3l2.4 5.9 6.3.5-4.8 4.1 1.5 6.2L12 16.9 6.6 19.7l1.5-6.2L3.3 9.4l6.3-.5z" /> },
+  LEARNING_STYLE: { label: 'Learning style', color: '#3E9AE0', icon: <><path d="M12 7v14" /><path d="M3 5h5a3 3 0 0 1 3 3v11a2.5 2.5 0 0 0-2.5-2H3z" /><path d="M21 5h-5a3 3 0 0 0-3 3v11a2.5 2.5 0 0 1 2.5-2H21z" /></> },
 }
+const tint = (c: string) => `color-mix(in srgb, ${c} 13%, transparent)`
 
 export function AssignmentList({ assignments }: { assignments: Assignment[] }) {
-  const getTypeIcon = (type: Assignment['type']) => {
-    const iconClass = "w-5 h-5"
-    switch (type) {
-      case 'PERSONALITY': return '🧠'
-      case 'APTITUDE': return '🎯'
-      case 'INTEREST': return '⭐'
-      case 'LEARNING_STYLE': return '📚'
-      default: return '📝'
-    }
+  if (!assignments.length) {
+    return <div style={{ color: 'var(--muted)', fontSize: 14 }}>No assignments available for your grade yet.</div>
   }
-
   return (
-    <motion.div 
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
-    >
-      {assignments.map((assignment) => (
-        <motion.div
-          key={assignment.id}
-          variants={item}
-          className="group"
-        >
-          <Link href={`/dashboard/student/assignments/${assignment.id}`}>
-            <Card className="hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-blue-100">
-              <CardHeader>
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-2xl" role="img" aria-label={assignment.type}>
-                    {getTypeIcon(assignment.type)}
-                  </span>
-                  
-                </div>
-                <CardTitle className="text-xl group-hover:text-blue-600 transition-colors">
-                  {assignment.title}
-                </CardTitle>
-                <CardDescription className="line-clamp-2">
-                  {assignment.description}
-                </CardDescription>
-              </CardHeader>
-              <CardFooter className="pt-4">
-                <div className="flex justify-between items-center w-full">
-                  <Badge 
-                    variant="outline" 
-                    className={`
-                      ${getColorByType(assignment.type)}
-                      transition-colors
-                    `}
-                  >
-                    {formatType(assignment.type)}
-                  </Badge>
-                  <motion.div
-                    whileHover={{ x: 5 }}
-                    className="text-blue-600"
-                  >
-                    <ArrowRight className="w-5 h-5" />
-                  </motion.div>
-                </div>
-              </CardFooter>
-            </Card>
+    <div className="ng-grid-3">
+      {assignments.map((a) => {
+        const m = typeMeta[a.type] || typeMeta.APTITUDE
+        const done = !!a.completed
+        return (
+          <Link key={a.id} href={`/dashboard/student/assignments/${a.id}`} className="ng-lift" style={{ display: 'flex', flexDirection: 'column', background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 16, padding: 22, textDecoration: 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ width: 44, height: 44, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: tint(m.color), color: m.color }}><Ico>{m.icon}</Ico></span>
+              <span style={{ fontSize: 11.5, fontWeight: 600, color: done ? '#1F8A5B' : '#2F6FB0', background: done ? tint('#1F8A5B') : tint('#2F6FB0'), padding: '4px 10px', borderRadius: 999 }}>{done ? 'Completed' : 'Not started'}</span>
+            </div>
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--ink)', margin: '16px 0 0' }}>{a.title}</h3>
+            <p style={{ fontSize: 13.5, lineHeight: 1.55, color: 'var(--muted)', margin: '7px 0 0', flex: 1 }}>{a.description}</p>
+            <div style={{ marginTop: 18, height: 40, borderRadius: 10, border: done ? '1px solid var(--border-c)' : 'none', background: done ? 'var(--surface)' : 'var(--pri)', color: done ? 'var(--ink)' : '#fff', fontSize: 13.5, fontWeight: 600, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              {done ? 'View again' : 'Start assessment'}
+              <Ico size={16}><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></Ico>
+            </div>
           </Link>
-        </motion.div>
-      ))}
-    </motion.div>
+        )
+      })}
+    </div>
   )
-}
-
-function getColorByType(type: Assignment['type']) {
-  switch (type) {
-    case 'PERSONALITY': return 'text-purple-600 border-purple-200'
-    case 'APTITUDE': return 'text-blue-600 border-blue-200'
-    case 'INTEREST': return 'text-orange-600 border-orange-200'
-    case 'LEARNING_STYLE': return 'text-green-600 border-green-200'
-    default: return 'text-gray-600 border-gray-200'
-  }
-}
-
-function formatType(type: string) {
-  return type.split('_').map(word => 
-    word.charAt(0) + word.slice(1).toLowerCase()
-  ).join(' ')
 }

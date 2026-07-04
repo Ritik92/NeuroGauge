@@ -1,23 +1,7 @@
 // components/school-reports.tsx
 'use client';
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface SchoolReport {
   id: string;
@@ -26,7 +10,11 @@ interface SchoolReport {
   createdAt: string;
 }
 
-export function   SchoolReports({ schoolId }: { schoolId: string }) {
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 16, padding: 22 };
+const th: React.CSSProperties = { textAlign: 'left', fontSize: 11.5, fontWeight: 600, color: 'var(--muted)', padding: '11px 16px', textTransform: 'uppercase', letterSpacing: '0.03em' };
+const td: React.CSSProperties = { fontSize: 13.5, color: 'var(--ink)', padding: '13px 16px' };
+
+export function SchoolReports({ schoolId }: { schoolId: string }) {
   const [reports, setReports] = useState<SchoolReport[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -47,89 +35,75 @@ export function   SchoolReports({ schoolId }: { schoolId: string }) {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-[200px] w-full" />
-        <Skeleton className="h-[200px] w-full" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ height: 200, borderRadius: 16, background: 'color-mix(in srgb, var(--muted) 12%, transparent)', animation: 'ng-pulse 1.4s ease-in-out infinite' }} />
+        <div style={{ height: 200, borderRadius: 16, background: 'color-mix(in srgb, var(--muted) 12%, transparent)', animation: 'ng-pulse 1.4s ease-in-out infinite' }} />
       </div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-6"
-    >
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {reports.map((report) => (
-        <motion.div
-          key={report.id}
-          initial={{ y: 20 }}
-          animate={{ y: 0 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                {report.type === 'GRADE_WISE' ? 'Grade-wise Report' : 'Yearly Report'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {report.type === 'GRADE_WISE' ? (
-                <GradeWiseReport data={report.data} />
-              ) : (
-                <YearlyReport data={report.data} />
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
+        <div key={report.id} style={card}>
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--ink)', margin: '0 0 16px' }}>
+            {report.type === 'GRADE_WISE' ? 'Grade-wise Report' : 'Yearly Report'}
+          </h2>
+          {report.type === 'GRADE_WISE' ? (
+            <GradeWiseReport data={report.data} />
+          ) : (
+            <YearlyReport data={report.data} />
+          )}
+        </div>
       ))}
-    </motion.div>
+    </div>
   );
 }
 
 function GradeWiseReport({ data }: { data: any }) {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-4">
-        <StatCard label="Total Students" value={data.totalStudents} />
-        <StatCard label="Math Average" value={data.averageScores.math} />
-        <StatCard label="Science Average" value={data.averageScores.science} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="ng-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+        <StatCard label="Total Students" value={data.totalStudents} color="#0E9384" />
+        <StatCard label="Math Average" value={data.averageScores.math} color="#3E9AE0" />
+        <StatCard label="Science Average" value={data.averageScores.science} color="#F1785F" />
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Subject</TableHead>
-            <TableHead className="text-right">Average Score</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Object.entries(data.averageScores).map(([subject, score]) => (
-            <TableRow key={subject}>
-              <TableCell className="font-medium">{subject}</TableCell>
-              <TableCell className="text-right">{score as number}%</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <div style={{ border: '1px solid var(--border-c)', borderRadius: 14, overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ background: 'var(--canvas)', borderBottom: '1px solid var(--border-c)' }}>
+              <th style={th}>Subject</th>
+              <th style={{ ...th, textAlign: 'right' }}>Average Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(data.averageScores).map(([subject, score], i) => (
+              <tr key={subject} style={{ borderTop: i !== 0 ? '1px solid var(--border-c)' : 'none' }}>
+                <td style={{ ...td, fontWeight: 600, textTransform: 'capitalize' }}>{subject}</td>
+                <td style={{ ...td, textAlign: 'right' }}>{score as number}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
 function YearlyReport({ data }: { data: any }) {
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <StatCard label="Graduation Rate" value={`${data.graduationRate}%`} />
-      <StatCard label="College Acceptance" value={`${data.collegeAcceptance}%`} />
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <StatCard label="Graduation Rate" value={`${data.graduationRate}%`} color="#0E9384" />
+      <StatCard label="College Acceptance" value={`${data.collegeAcceptance}%`} color="#9B5DE5" />
     </div>
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string | number }) {
+function StatCard({ label, value, color = '#0E9384' }: { label: string; value: string | number; color?: string }) {
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="text-sm text-muted-foreground">{label}</div>
-        <div className="text-2xl font-bold">{value}</div>
-      </CardContent>
-    </Card>
+    <div style={{ background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 14, padding: 18 }}>
+      <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>{label}</div>
+      <div style={{ fontSize: 24, fontWeight: 600, color, letterSpacing: '-0.02em', marginTop: 4 }}>{value}</div>
+    </div>
   );
 }

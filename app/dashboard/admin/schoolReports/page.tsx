@@ -1,18 +1,15 @@
 'use client'
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Search, FileBarChart, BarChart3, PieChart, TrendingUp } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { getSchoolReports } from '@/lib/actions/getSchoolReports';
+
+const Ico = ({ children, size = 20 }: { children: React.ReactNode; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">{children}</svg>
+);
+
+const tint = (c: string) => `color-mix(in srgb, ${c} 13%, transparent)`;
+const chip = (fg: string): React.CSSProperties => ({ fontSize: 11.5, fontWeight: 600, color: fg, background: `color-mix(in srgb, ${fg} 13%, transparent)`, padding: '4px 10px', borderRadius: 999, whiteSpace: 'nowrap' });
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 16, padding: 22 };
+const inputStyle: React.CSSProperties = { height: 40, padding: '0 14px', background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 10, fontSize: 14, color: 'var(--ink)', outline: 'none' };
 
 interface SchoolReport {
   id: string;
@@ -28,12 +25,13 @@ interface SchoolReport {
   };
 }
 
-const typeIcons = {
-  CLASS_WISE: <BarChart3 className="w-5 h-5" />,
-  GRADE_WISE: <PieChart className="w-5 h-5" />,
-  SCHOOL_WIDE: <FileBarChart className="w-5 h-5" />,
-  YEARLY: <TrendingUp className="w-5 h-5" />,
+const typeMeta: Record<string, { color: string; icon: React.ReactNode }> = {
+  CLASS_WISE: { color: '#0E9384', icon: <><path d="M3 3v18h18" /><rect x="7" y="10" width="3" height="7" /><rect x="12" y="6" width="3" height="11" /><rect x="17" y="13" width="3" height="4" /></> },
+  GRADE_WISE: { color: '#9B5DE5', icon: <><path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></> },
+  SCHOOL_WIDE: { color: '#3E9AE0', icon: <><path d="M3 3v18h18" /><path d="M18 17V9" /><path d="M13 17V5" /><path d="M8 17v-3" /></> },
+  YEARLY: { color: '#E8A33D', icon: <><path d="M22 7 13.5 15.5 8.5 10.5 2 17" /><path d="M16 7h6v6" /></> },
 };
+const metaFor = (t: string) => typeMeta[t] || typeMeta.SCHOOL_WIDE;
 
 export default function SchoolReportList() {
   const [initialReports, setInitialReports] = React.useState<SchoolReport[]>([]);
@@ -63,21 +61,6 @@ export default function SchoolReportList() {
     return matchesSearch && matchesFilter;
   }) || [];
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const item = {
-    hidden: { y: 20, opacity: 0 },
-    show: { y: 0, opacity: 1 }
-  };
-
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -87,131 +70,79 @@ export default function SchoolReportList() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-blue-50 via-white to-indigo-50">
-        <motion.div
-          animate={{
-            rotate: 360
-          }}
-          transition={{
-            duration: 1,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        >
-          <FileBarChart className="w-8 h-8 text-blue-600" />
-        </motion.div>
-      </div>
-    );
+    return <div style={{ color: 'var(--muted)', padding: 8 }}>Loading…</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-indigo-50">
-      <div className="container mx-auto py-8 px-4">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            School Reports
-          </h1>
-          
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search by school name..."
-                className="pl-10 border-blue-100 focus:border-blue-300 transition-colors"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            
-            <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className="w-full sm:w-[180px] border-blue-100">
-                <SelectValue placeholder="Filter by type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All Types</SelectItem>
-                <SelectItem value="CLASS_WISE">Class-wise</SelectItem>
-                <SelectItem value="GRADE_WISE">Grade-wise</SelectItem>
-                <SelectItem value="SCHOOL_WIDE">School-wide</SelectItem>
-                <SelectItem value="YEARLY">Yearly</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </motion.div>
+    <div>
+      <h1 style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0 }}>School Reports</h1>
+      <p style={{ fontSize: 14, color: 'var(--muted)', margin: '6px 0 0' }}>Generated reports across schools, grades, and classes.</p>
 
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: 240 }}>
+          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', display: 'flex' }}>
+            <Ico size={16}><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></Ico>
+          </span>
+          <input
+            className="ng-input"
+            placeholder="Search by school name..."
+            style={{ ...inputStyle, width: '100%', paddingLeft: 38 }}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <select
+          className="ng-input"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          style={{ ...inputStyle, width: 180, cursor: 'pointer' }}
         >
-          {filteredReports.map((report) => (
-            <motion.div 
-              key={report.id} 
-              variants={item}
-              whileHover={{ y: -5 }}
-              className="h-full"
-            >
-              <Card className="h-full hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-blue-50">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-2">
-                      {typeIcons[report.type]}
-                      <Badge variant="outline" className="bg-blue-50">
-                        {report.type.replace('_', ' ')}
-                      </Badge>
-                    </div>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                      {formatDate(report.createdAt)}
-                    </Badge>
-                  </div>
-                  <CardTitle className="mt-2">{report.school.name}</CardTitle>
-                  <CardDescription>
-                    {report.school.city}, {report.school.state}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Admin:</span>
-                      <span>{report.school.adminFirstName} {report.school.adminLastName}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Contact:</span>
-                      <span>{report.school.phone}</span>
-                    </div>
-                    <motion.div
-                      className="w-full h-1 bg-blue-100 mt-4 rounded-full overflow-hidden"
-                      initial={false}
-                    >
-                      <motion.div
-                        className="h-full bg-gradient-to-r from-blue-600 to-indigo-600"
-                        initial={{ width: 0 }}
-                        animate={{ width: '100%' }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                      />
-                    </motion.div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {filteredReports.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-12"
-          >
-            <p className="text-gray-500">No reports found matching your criteria.</p>
-          </motion.div>
-        )}
+          <option value="ALL">All Types</option>
+          <option value="CLASS_WISE">Class-wise</option>
+          <option value="GRADE_WISE">Grade-wise</option>
+          <option value="SCHOOL_WIDE">School-wide</option>
+          <option value="YEARLY">Yearly</option>
+        </select>
       </div>
+
+      <div className="ng-grid-3" style={{ marginTop: 20 }}>
+        {filteredReports.map((report) => {
+          const m = metaFor(report.type);
+          return (
+            <div key={report.id} style={{ ...card, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ width: 38, height: 38, flex: '0 0 auto', borderRadius: 10, background: tint(m.color), color: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Ico size={20}>{m.icon}</Ico>
+                  </span>
+                  <span style={chip(m.color)}>{report.type.replace('_', ' ')}</span>
+                </div>
+                <span style={chip('#5E6B6A')}>{formatDate(report.createdAt)}</span>
+              </div>
+
+              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginTop: 16, letterSpacing: '-0.01em' }}>{report.school.name}</div>
+              <p style={{ fontSize: 13, color: 'var(--muted)', margin: '4px 0 0' }}>{report.school.city}, {report.school.state}</p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border-c)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13 }}>
+                  <span style={{ color: 'var(--muted)' }}>Admin</span>
+                  <span style={{ color: 'var(--ink)', fontWeight: 500 }}>{report.school.adminFirstName} {report.school.adminLastName}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13 }}>
+                  <span style={{ color: 'var(--muted)' }}>Contact</span>
+                  <span style={{ color: 'var(--ink)', fontWeight: 500 }}>{report.school.phone}</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {filteredReports.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--muted)', fontSize: 14 }}>
+          No reports found matching your criteria.
+        </div>
+      )}
     </div>
   );
 }

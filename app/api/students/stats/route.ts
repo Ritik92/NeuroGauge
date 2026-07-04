@@ -1,8 +1,7 @@
-import { PrismaClient, CompletionStatus } from '@prisma/client'
+import prisma from '@/lib/prisma'
+import { CompletionStatus } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-
-const prisma = new PrismaClient()
 
 export async function GET(req: NextRequest) {
   try {
@@ -36,7 +35,8 @@ export async function GET(req: NextRequest) {
         }
       }),
       prisma.studentAssessment.findMany({
-        where: { 
+        where: {
+          studentId: user.student.id, // Only this student's assessment records
           assessment: {
             status: 'PUBLISHED',
             gradeLevel: { hasSome: [user.student.grade] } // Match student's grade

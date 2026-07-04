@@ -1,18 +1,13 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { useDropzone } from "react-dropzone"
 import Script from "next/script"
 import { useRouter } from "next/navigation"
 import { Upload, FileUp, CheckCircle, CreditCard } from "lucide-react"
-import { motion } from "framer-motion"
 import axios from "axios"
 import { toast } from "sonner"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { parseCSV, validateStudentData, MAX_STUDENTS } from "@/lib/csvUtils"
 
 // Types
@@ -31,6 +26,10 @@ declare global {
     Razorpay: any
   }
 }
+
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 16, padding: 22 }
+const th: React.CSSProperties = { textAlign: 'left', fontSize: 11.5, fontWeight: 600, color: 'var(--muted)', padding: '11px 16px', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }
+const td: React.CSSProperties = { fontSize: 13.5, color: 'var(--ink)', padding: '13px 16px' }
 
 // Component
 export function StudentBulkUpload() {
@@ -120,7 +119,7 @@ export function StudentBulkUpload() {
         email: "school@example.com",
       },
       theme: {
-        color: "#4F46E5",
+        color: "#0E9384",
       },
       modal: {
         ondismiss: handlePaymentCancellation,
@@ -202,78 +201,72 @@ export function StudentBulkUpload() {
 
   // UI Components
   const renderFileUpload = () => (
-    //@ts-ignore
-    <motion.div
+    <div
       {...getRootProps()}
-      className={`border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300
-        ${isDragActive ? "border-blue-400 bg-blue-50/50" : "border-gray-300 hover:border-blue-300 hover:bg-blue-50/30"}`}
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.99 }}
+      style={{
+        border: `2px dashed ${isDragActive ? 'var(--pri)' : 'var(--border-c)'}`,
+        background: isDragActive ? 'var(--tint)' : 'var(--canvas)',
+        borderRadius: 16,
+        padding: '48px 24px',
+        textAlign: 'center',
+        cursor: 'pointer',
+        transition: 'border-color 0.2s ease, background 0.2s ease',
+      }}
     >
       <input {...getInputProps()} />
-      <motion.div animate={{ y: isDragActive ? -10 : 0 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
-        <FileUp className={`w-12 h-12 mx-auto mb-4 ${isDragActive ? "text-blue-600" : "text-gray-400"}`} />
-        <p className="text-lg font-medium text-gray-700">
-          {isDragActive ? "Drop your CSV file here" : "Drag & drop your CSV file here"}
-        </p>
-        <p className="text-sm text-gray-500 mt-2">or click to select from your computer</p>
-      </motion.div>
-    </motion.div>
+      <FileUp size={44} style={{ margin: '0 auto 14px', display: 'block', color: isDragActive ? 'var(--pri)' : 'var(--muted)' }} />
+      <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--ink)', margin: 0 }}>
+        {isDragActive ? "Drop your CSV file here" : "Drag & drop your CSV file here"}
+      </p>
+      <p style={{ fontSize: 13, color: 'var(--muted)', margin: '6px 0 0' }}>or click to select from your computer</p>
+    </div>
   )
 
   const renderPaymentSummary = () => (
-    <motion.div
-      className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-6"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
-      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-blue-600">
-        <CreditCard className="w-5 h-5" />
-        Payment Summary
+    <div style={{ background: 'var(--tint)', borderRadius: 14, padding: 20, marginBottom: 20 }}>
+      <h3 style={{ fontSize: 15, fontWeight: 600, margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8, color: 'var(--pri)' }}>
+        <CreditCard size={18} />
+        Payment summary
       </h3>
-      <div className="space-y-2">
-        <p className="text-gray-600">Total Students: {parsedData.length}</p>
-        <p className="text-gray-600">Cost per Student: ₹100</p>
-        <p className="text-xl font-bold text-blue-600">Total Amount: ₹{parsedData.length * 100}</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <p style={{ fontSize: 13.5, color: 'var(--muted)', margin: 0 }}>Total students: {parsedData.length}</p>
+        <p style={{ fontSize: 13.5, color: 'var(--muted)', margin: 0 }}>Cost per student: ₹100</p>
+        <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--ink)', margin: '4px 0 0', letterSpacing: '-0.01em' }}>Total amount: ₹{parsedData.length * 100}</p>
       </div>
-    </motion.div>
+    </div>
   )
 
   const renderDataPreview = () => (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-6">
-      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-blue-600">
-        <CheckCircle className="w-5 h-5" />
-        Preview Data
+    <div style={{ marginBottom: 20 }}>
+      <h3 style={{ fontSize: 15, fontWeight: 600, margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8, color: 'var(--ink)' }}>
+        <CheckCircle size={18} style={{ color: '#1F8A5B' }} />
+        Preview data
       </h3>
-      <div className="rounded-lg overflow-hidden border border-gray-200">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gradient-to-r from-blue-50 to-indigo-50">
-              <TableHead>First Name</TableHead>
-              <TableHead>Last Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Date of Birth</TableHead>
-              <TableHead>Grade</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {parsedData.slice(0, 5).map((row, index) => (
-              <motion.tr
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="hover:bg-blue-50/50 transition-colors"
-              >
-                <TableCell>{row.firstName}</TableCell>
-                <TableCell>{row.lastName}</TableCell>
-                <TableCell>{row.email}</TableCell>
-                <TableCell>{row.dateOfBirth}</TableCell>
-                <TableCell>{row.grade}</TableCell>
-              </motion.tr>
-            ))}
-          </TableBody>
-        </Table>
+      <div style={{ border: '1px solid var(--border-c)', borderRadius: 14, overflow: 'hidden' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: 'var(--canvas)', borderBottom: '1px solid var(--border-c)' }}>
+                <th style={th}>First name</th>
+                <th style={th}>Last name</th>
+                <th style={th}>Email</th>
+                <th style={th}>Date of birth</th>
+                <th style={th}>Grade</th>
+              </tr>
+            </thead>
+            <tbody>
+              {parsedData.slice(0, 5).map((row, index) => (
+                <tr key={index} style={{ borderTop: index !== 0 ? '1px solid var(--border-c)' : 'none' }}>
+                  <td style={td}>{row.firstName}</td>
+                  <td style={td}>{row.lastName}</td>
+                  <td style={{ ...td, color: 'var(--muted)' }}>{row.email}</td>
+                  <td style={{ ...td, color: 'var(--muted)' }}>{row.dateOfBirth}</td>
+                  <td style={td}>{row.grade}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
@@ -287,6 +280,8 @@ export function StudentBulkUpload() {
     return ""
   }
 
+  const btnDisabled = paymentStatus === "processing" || uploading || loading || parsedData.length > MAX_STUDENTS
+
   return (
     <>
       <Script
@@ -298,59 +293,64 @@ export function StudentBulkUpload() {
           toast.error("Failed to load payment system")
         }}
       />
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-indigo-50 py-8 px-4">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
-          <Card className="bg-white/50 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300">
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
-              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-2">
-                <Upload className="h-6 w-6" />
-                Bulk Student Upload
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              {!parsedData.length && renderFileUpload()}
+      <div>
+        <h1 style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Upload size={24} style={{ color: 'var(--pri)' }} />
+          Bulk student upload
+        </h1>
+        <p style={{ fontSize: 14, color: 'var(--muted)', margin: '6px 0 0' }}>Import multiple students at once from a CSV file</p>
 
-              {parsedData.length > 0 && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-8">
-                  {parsedData.length > MAX_STUDENTS && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-                      <p className="text-red-600 font-medium">
-                        Warning: You can only upload up to {MAX_STUDENTS} students at once. Current count:{" "}
-                        {parsedData.length}
-                      </p>
-                    </div>
-                  )}
+        <div style={{ ...card, marginTop: 24 }}>
+          {!parsedData.length && renderFileUpload()}
 
-                  {renderPaymentSummary()}
-                  {renderDataPreview()}
-
-                  {uploading && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-6">
-                      <Progress value={progress} className="h-2" />
-                      <p className="text-sm text-gray-600 mt-2 text-center">Uploading... {progress}%</p>
-                    </motion.div>
-                  )}
-
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button
-                      onClick={paymentStatus === "pending" ? handlePayment : undefined}
-                      disabled={
-                        paymentStatus === "processing" || uploading || loading || parsedData.length > MAX_STUDENTS
-                      }
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full py-6 font-medium text-lg hover:opacity-90 transition-opacity disabled:opacity-50"
-                    >
-                      {getButtonText()}
-                    </Button>
-                  </motion.div>
-                </motion.div>
+          {parsedData.length > 0 && (
+            <div>
+              {parsedData.length > MAX_STUDENTS && (
+                <div style={{ marginBottom: 20, padding: 14, background: 'color-mix(in srgb, #C0453B 10%, transparent)', border: '1px solid color-mix(in srgb, #C0453B 30%, transparent)', borderRadius: 12 }}>
+                  <p style={{ fontSize: 13.5, color: '#C0453B', fontWeight: 500, margin: 0 }}>
+                    Warning: You can only upload up to {MAX_STUDENTS} students at once. Current count: {parsedData.length}
+                  </p>
+                </div>
               )}
-            </CardContent>
-          </Card>
-        </motion.div>
+
+              {renderPaymentSummary()}
+              {renderDataPreview()}
+
+              {uploading && (
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{ height: 8, borderRadius: 999, background: 'var(--border-c)', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${progress}%`, background: 'var(--pri)', borderRadius: 999, transition: 'width 0.2s ease' }} />
+                  </div>
+                  <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '8px 0 0', textAlign: 'center' }}>Uploading... {progress}%</p>
+                </div>
+              )}
+
+              <button
+                onClick={paymentStatus === "pending" ? handlePayment : undefined}
+                disabled={btnDisabled}
+                className="ng-btn-primary"
+                style={{
+                  width: '100%',
+                  height: 48,
+                  background: 'var(--pri)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 10,
+                  fontSize: 15,
+                  fontWeight: 600,
+                  cursor: btnDisabled ? 'not-allowed' : 'pointer',
+                  opacity: btnDisabled ? 0.5 : 1,
+                  fontFamily: 'inherit',
+                }}
+              >
+                {getButtonText()}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </>
   )
 }
 
 export default StudentBulkUpload
-

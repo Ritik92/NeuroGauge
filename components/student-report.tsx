@@ -1,136 +1,80 @@
-// ReportList.tsx
 'use client';
+
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Brain, ArrowRight, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { getStudentReports } from '@/lib/actions/report';
 
+const Ico = ({ children, size = 20 }: { children: React.ReactNode; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">{children}</svg>
+);
+const tint = (c: string) => `color-mix(in srgb, ${c} 13%, transparent)`;
+
 export function ReportList() {
-  const [reports, setReports] = useState([]);
+  const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadReports = async () => {
+    (async () => {
       const res = await getStudentReports();
-      setReports(res || []);
+      setReports((res as any) || []);
       setLoading(false);
-    };
-    loadReports();
+    })();
   }, []);
 
   if (loading) return <ReportSkeleton />;
 
-  return (
-    <div className="relative">
-      {/* Background Decoration */}
-      <div className="absolute inset-0 -z-10">
-        <motion.div
-          className="absolute top-20 left-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70"
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 90, 0],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-10 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-70"
-          animate={{
-            scale: [1.2, 1, 1.2],
-            rotate: [90, 0, 90],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
+  if (!reports.length) {
+    return (
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 16, padding: 40, textAlign: 'center', color: 'var(--muted)', fontSize: 14 }}>
+        No reports yet — complete an assessment to generate your first report.
       </div>
+    );
+  }
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
-      >
-        {reports.map((report, index) => (
-          <motion.div
-            key={report.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <motion.div
-              whileHover={{ y: -5, scale: 1.02 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-            >
-              <Card className="h-full bg-white/50 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                        Report #{reports.indexOf(report) + 1}
-                      </CardTitle>
-                      <CardDescription>
-                        {new Date(report.createdAt).toLocaleDateString()}
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Button 
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 transition-opacity"
-                    asChild
-                  >
-                    <Link href={`/dashboard/student/reports/${report.id}`} className="flex items-center justify-center space-x-2">
-                      <span>View Details</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </motion.div>
-        ))}
-      </motion.div>
+  return (
+    <div className="ng-grid-3">
+      {reports.map((report, index) => {
+        const data = report.data || {};
+        const label = data?.studentInfo?.personalityType || 'Assessment report';
+        const career = data?.bestCareer?.title;
+        return (
+          <Link key={report.id} href={`/dashboard/student/reports/${report.id}`} className="ng-lift" style={{ display: 'flex', flexDirection: 'column', background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 16, padding: 22, textDecoration: 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ width: 42, height: 42, borderRadius: 11, background: 'var(--tint)', color: 'var(--pri)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Ico>{<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M8 13h8M8 17h5" /></>}</Ico></span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>Report #{index + 1}</div>
+                <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>{new Date(report.createdAt).toLocaleDateString()}</div>
+              </div>
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--muted)', margin: '16px 0 0', lineHeight: 1.5 }}>
+              <span style={{ color: 'var(--ink)', fontWeight: 500 }}>{label}</span>
+              {career ? <> · best fit: {career}</> : null}
+            </div>
+            <div style={{ marginTop: 18, height: 40, borderRadius: 10, background: 'var(--pri)', color: '#fff', fontSize: 13.5, fontWeight: 600, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              View report
+              <Ico size={16}><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></Ico>
+            </div>
+          </Link>
+        );
+      })}
     </div>
   );
 }
 
 function ReportSkeleton() {
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {[...Array(3)].map((_, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: i * 0.1 }}
-        >
-          <Card className="h-full bg-white/50 backdrop-blur-sm">
-            <CardHeader>
-              <div className="flex items-center space-x-3">
-                <Skeleton className="w-10 h-10 rounded-lg" />
-                <div className="space-y-2">
-                  <Skeleton className="h-6 w-32" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-10 w-full rounded-full" />
-            </CardContent>
-          </Card>
-        </motion.div>
+    <div className="ng-grid-3">
+      {[0, 1, 2].map((i) => (
+        <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 16, padding: 22 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 42, height: 42, borderRadius: 11, background: 'var(--tint)' }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ width: '60%', height: 12, borderRadius: 6, background: 'var(--border-c)' }} />
+              <div style={{ width: '40%', height: 10, borderRadius: 6, background: 'var(--border-c)', marginTop: 8 }} />
+            </div>
+          </div>
+          <div style={{ height: 40, borderRadius: 10, background: 'var(--border-c)', marginTop: 24 }} />
+        </div>
       ))}
     </div>
   );

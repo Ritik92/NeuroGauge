@@ -1,32 +1,28 @@
 'use client'
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Search, Filter, BookOpen, Brain, Lightbulb, PenTool } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { getAssessments } from '@/lib/actions/fetchassessment';
 
-// Assessment type icons mapping
-const typeIcons = {
-  PERSONALITY: <Brain className="w-5 h-5" />,
-  APTITUDE: <PenTool className="w-5 h-5" />,
-  INTEREST: <Lightbulb className="w-5 h-5" />,
-  LEARNING_STYLE: <BookOpen className="w-5 h-5" />,
-};
+const Ico = ({ children, size = 20 }: { children: React.ReactNode; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">{children}</svg>
+);
 
-const statusColors = {
-  DRAFT: 'bg-yellow-100 text-yellow-800',
-  PUBLISHED: 'bg-green-100 text-green-800',
-  ARCHIVED: 'bg-gray-100 text-gray-800',
+const tint = (c: string) => `color-mix(in srgb, ${c} 13%, transparent)`;
+const chip = (fg: string): React.CSSProperties => ({ fontSize: 11.5, fontWeight: 600, color: fg, background: `color-mix(in srgb, ${fg} 13%, transparent)`, padding: '4px 10px', borderRadius: 999, whiteSpace: 'nowrap' });
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 16, padding: 22 };
+const inputStyle: React.CSSProperties = { height: 40, padding: '0 14px', background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 10, fontSize: 14, color: 'var(--ink)', outline: 'none' };
+
+const typeMeta: Record<string, { color: string; icon: React.ReactNode }> = {
+  PERSONALITY: { color: '#9B5DE5', icon: <><path d="M12 5a3 3 0 0 0-6 .2 3 3 0 0 0-1.7 5.2A2.8 2.8 0 0 0 6 16a3 3 0 0 0 6 .5z" /><path d="M12 5a3 3 0 0 1 6 .2 3 3 0 0 1 1.7 5.2A2.8 2.8 0 0 1 18 16a3 3 0 0 1-6 .5z" /></> },
+  APTITUDE: { color: '#0E9384', icon: <><path d="M12 19l7-7 3 3-7 7-3-3z" /><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18z" /><path d="M2 2l7.586 7.586" /><circle cx="11" cy="11" r="2" /></> },
+  INTEREST: { color: '#F1785F', icon: <path d="M12 3l2.4 5.9 6.3.5-4.8 4.1 1.5 6.2L12 16.9 6.6 19.7l1.5-6.2L3.3 9.4l6.3-.5z" /> },
+  LEARNING_STYLE: { color: '#3E9AE0', icon: <><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></> },
+};
+const metaFor = (t: string) => typeMeta[t] || typeMeta.APTITUDE;
+
+const statusColors: Record<string, string> = {
+  DRAFT: '#E8A33D',
+  PUBLISHED: '#1F8A5B',
+  ARCHIVED: '#5E6B6A',
 };
 
 const AssessmentList = () => {
@@ -58,115 +54,78 @@ const AssessmentList = () => {
     return matchesSearch && matchesFilter;
   });
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const item = {
-    hidden: { y: 20, opacity: 0 },
-    show: { y: 0, opacity: 1 }
-  };
-
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <motion.div
-          animate={{
-            rotate: 360
-          }}
-          transition={{
-            duration: 1,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        >
-          <BookOpen className="w-8 h-8 text-primary" />
-        </motion.div>
-      </div>
-    );
+    return <div style={{ color: 'var(--muted)', padding: 8 }}>Loading…</div>;
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">Assessments</h1>
-        
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search assessments..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Status</SelectItem>
-              <SelectItem value="DRAFT">Draft</SelectItem>
-              <SelectItem value="PUBLISHED">Published</SelectItem>
-              <SelectItem value="ARCHIVED">Archived</SelectItem>
-            </SelectContent>
-          </Select>
+    <div>
+      <h1 style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0 }}>Assessments</h1>
+      <p style={{ fontSize: 14, color: 'var(--muted)', margin: '6px 0 0' }}>The catalog of assessments available across the platform.</p>
+
+      <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: 240 }}>
+          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', display: 'flex' }}>
+            <Ico size={16}><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></Ico>
+          </span>
+          <input
+            className="ng-input"
+            placeholder="Search assessments..."
+            style={{ ...inputStyle, width: '100%', paddingLeft: 38 }}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
+        <select
+          className="ng-input"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          style={{ ...inputStyle, width: 180, cursor: 'pointer' }}
+        >
+          <option value="ALL">All Status</option>
+          <option value="DRAFT">Draft</option>
+          <option value="PUBLISHED">Published</option>
+          <option value="ARCHIVED">Archived</option>
+        </select>
       </div>
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
-        {filteredAssessments.map((assessment) => (
-          <motion.div key={assessment.id} variants={item}>
-            <Card className="h-full hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2">
-                    {typeIcons[assessment.type]}
-                    <Badge variant="outline">{assessment.type}</Badge>
-                  </div>
-                  <Badge className={statusColors[assessment.status]}>
-                    {assessment.status}
-                  </Badge>
+      <div className="ng-grid-3" style={{ marginTop: 20 }}>
+        {filteredAssessments.map((assessment) => {
+          const m = metaFor(assessment.type);
+          const sc = statusColors[assessment.status] || '#5E6B6A';
+          return (
+            <div key={assessment.id} style={{ ...card, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ width: 38, height: 38, flex: '0 0 auto', borderRadius: 10, background: tint(m.color), color: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Ico size={20}>{m.icon}</Ico>
+                  </span>
+                  <span style={chip(m.color)}>{assessment.type}</span>
                 </div>
-                <CardTitle className="mt-2">{assessment.title}</CardTitle>
-                <CardDescription>{assessment.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {assessment.gradeLevel.map((grade) => (
-                    <Badge key={grade} variant="secondary">
-                      Grade {grade}
-                    </Badge>
-                  ))}
-                </div>
-                <Button className="w-full mt-4">View Details</Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </motion.div>
+                <span style={chip(sc)}>{assessment.status}</span>
+              </div>
+
+              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginTop: 16, letterSpacing: '-0.01em' }}>{assessment.title}</div>
+              <p style={{ fontSize: 13, color: 'var(--muted)', margin: '6px 0 0', lineHeight: 1.55 }}>{assessment.description}</p>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
+                {assessment.gradeLevel.map((grade) => (
+                  <span key={grade} style={chip('#3E9AE0')}>Grade {grade}</span>
+                ))}
+              </div>
+
+              <button className="ng-btn-primary" style={{ marginTop: 18, height: 40, width: '100%', background: 'var(--pri)', color: '#fff', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                View Details
+              </button>
+            </div>
+          );
+        })}
+      </div>
 
       {filteredAssessments.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-12"
-        >
-          <p className="text-gray-500">No assessments found matching your criteria.</p>
-        </motion.div>
+        <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--muted)', fontSize: 14 }}>
+          No assessments found matching your criteria.
+        </div>
       )}
     </div>
   );

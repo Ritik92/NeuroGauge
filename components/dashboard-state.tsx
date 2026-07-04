@@ -1,21 +1,24 @@
 // components/dashboard-stats.tsx
 'use client';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { School, Users, UserCheck, ClipboardList } from 'lucide-react';
 
-const statIcons = {
-  'Total Schools': School,
-  'Total Students': Users,
-  'Total Parents': UserCheck,
-  'Assessments': ClipboardList
+const Ico = ({ children, size = 20 }: { children: React.ReactNode; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">{children}</svg>
+);
+
+const tint = (c: string) => `color-mix(in srgb, ${c} 13%, transparent)`;
+
+const statMeta: Record<string, { color: string; icon: React.ReactNode }> = {
+  'Total Schools': { color: '#0E9384', icon: <><path d="M3 21h18" /><path d="M5 21V8l7-4 7 4v13" /><path d="M9 21v-6h6v6" /></> },
+  'Total Students': { color: '#3E9AE0', icon: <><path d="M20 21v-2a4 4 0 0 0-3-3.87" /><path d="M4 21v-2a4 4 0 0 1 3-3.87" /><circle cx="12" cy="7" r="4" /></> },
+  'Total Parents': { color: '#F1785F', icon: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="m22 11-3 3-1.5-1.5" /></> },
+  'Assessments': { color: '#9B5DE5', icon: <><path d="M8 6h13M8 12h13M8 18h13" /><path d="M3 6h.01M3 12h.01M3 18h.01" /></> },
 };
+const metaFor = (t: string) => statMeta[t] || statMeta['Total Schools'];
 
 export function DashboardStats() {
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState<Record<string, number> | null>(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -32,67 +35,34 @@ export function DashboardStats() {
 
   if (!stats) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="ng-grid-4">
         {[...Array(4)].map((_, i) => (
-          <Skeleton 
-            key={i} 
-            className="h-32 rounded-xl bg-gradient-to-br from-blue-100/50 to-indigo-100/50" 
-          />
+          <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 16, padding: 22, height: 96 }} />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {Object.entries(stats).map(([key, value], index) => (
-        <motion.div
-          key={key}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
-        >
-          <StatCard 
-            title={key.replace(/([A-Z])/g, ' $1').trim()} 
-            value={value} 
-            index={index} 
-          />
-        </motion.div>
+    <div className="ng-grid-4">
+      {Object.entries(stats).map(([key, value]) => (
+        <StatCard key={key} title={key.replace(/([A-Z])/g, ' $1').trim()} value={value} />
       ))}
     </div>
   );
 }
 
-function StatCard({ title, value, index }) {
-  const Icon = statIcons[title];
-
+function StatCard({ title, value }: { title: string; value: number }) {
+  const m = metaFor(title);
   return (
-    <motion.div whileHover={{ y: -5 }} whileTap={{ scale: 0.98 }}>
-      <Card className="overflow-hidden bg-white/90 backdrop-blur-sm border-0 shadow-xl">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">{title}</CardTitle>
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: index * 0.1 + 0.2 }}
-            className="p-2 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50"
-          >
-          
-          </motion.div>
-        </CardHeader>
-        <CardContent>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 + 0.3 }}
-            className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent"
-          >
-            {value.toLocaleString()}
-          </motion.div>
-        </CardContent>
-        {/* Decorative gradient line */}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-20" />
-      </Card>
-    </motion.div>
+    <div style={{ background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 16, padding: 22 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ width: 40, height: 40, borderRadius: 11, background: tint(m.color), color: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Ico>{m.icon}</Ico></span>
+        <div>
+          <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--ink)', letterSpacing: '-0.02em', lineHeight: 1 }}>{(value ?? 0).toLocaleString()}</div>
+          <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 4 }}>{title}</div>
+        </div>
+      </div>
+    </div>
   );
 }

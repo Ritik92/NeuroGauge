@@ -1,44 +1,24 @@
-import { PrismaClient } from '@prisma/client'
-import { NextRequest, NextResponse } from 'next/server'
-
-const prisma = new PrismaClient()
-import { Sidebar } from '@/components/sidebar';
-import SchoolDashboardLayout from '@/components/SchoolDashboardLayout';
+import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/auth.config';
+import AppShell from '@/components/AppShell';
 
+export default async function SchoolLayout({ children }: { children: React.ReactNode }) {
+  const session = await getServerSession(authOptions);
+  const user = session?.user as { id?: string; role?: string } | undefined;
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-   const session = await getServerSession(authOptions)
-    const user=session.user
-    let school, studentsCount = 0, reportsCount = 0;
-  
-    if (user?.role === 'SCHOOL_ADMIN') {
-      school = await prisma.school.findUnique({
-        where: { userId: user.id },
-        include: {
-          _count: {
-            select: {
-              students: true,
-              reports: true
-            }
-          }
-        }
-      });
-  
-      studentsCount = school?._count?.students || 0;
-      reportsCount = school?._count?.reports || 0;
-    }
-  
+  let schoolId: string | undefined;
+  if (user?.role === 'SCHOOL_ADMIN' && user.id) {
+    const school = await prisma.school.findUnique({
+      where: { userId: user.id },
+      select: { id: true },
+    });
+    schoolId = school?.id;
+  }
+
   return (
-   
-      <SchoolDashboardLayout school={school} user={user} >
+    <AppShell role="SCHOOL_ADMIN" schoolId={schoolId}>
       {children}
-      </SchoolDashboardLayout>
-    
+    </AppShell>
   );
 }

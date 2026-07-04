@@ -1,9 +1,8 @@
 // app/api/students/bulk-upload/route.ts
-import { PrismaClient } from '@prisma/client'
+import prisma from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { StudentCSVSchema } from '@/lib/validations/student';
 import { auth } from '@/auth.config';
-const prisma = new PrismaClient()
 export async function POST(req: Request) {
   try {
     const session = await auth()
